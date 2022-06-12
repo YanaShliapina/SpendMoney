@@ -1,32 +1,144 @@
-﻿<div class="card-columns">
-  <div class="card bg-primary">
-    <div class="card-body text-center">
-      <p class="card-text">Some text inside the first card</p>
+﻿@model UserAccountDetailsViewModel
+
+<div class="row">
+    <div class="col">
+        <div class="d-flex">
+            <div class="card mb-4" style="width: 100%">
+                <div class="card-header">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-3">
+                                <h4>Рахунки</h4>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <a class="btn btn-success" asp-controller="Category" asp-action="CreateCategory">Додати рахунок</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="container-fluid">
+                    <div class="gallery">
+                        @foreach (var item in Model.UserAccounts)
+                        {
+                            <div class="row justify-content-center">
+                                <div class="col d-flex align-items-center justify-content-center">@item.Name</div>
+                                <div class="w-100 d-none d-md-block"></div>
+                                <div class="gallery__item gallery__item--1 col d-flex align-items-center justify-content-center" id="@item.AccountId">
+                                    <i class="category-images gallery__img"><img src="@item.Image" width="30"/></i>
+                                </div>
+                                <div class="w-100 d-none d-md-block"></div>
+                                <div class="col d-flex align-items-center justify-content-center">@item.Amount</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex">
+            <div class="card" style="width: 100%">
+                <div class="card-header">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-4">
+                                <h4>Категорії</h4>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                <a class="btn btn-success" asp-controller="Category" asp-action="CreateCategory">Додати категорію</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="container-fluid">
+                    <div class="gallery">
+                        @foreach (var item in Model.UserCategoryList)
+                        {
+                            <div class="row justify-content-center">
+                                <div class="col d-flex align-items-center justify-content-center">@item.Name</div>
+                                <div class="w-100 d-none d-md-block"></div>
+                                <div class="gallery__item gallery__item--1 col d-flex align-items-center justify-content-center" id="@item.Id">
+                                    <i class="category-images gallery__img" style="background: @item.Color;"><img src="@item.Image" width="30"/></i>
+                                </div>
+                                <div class="w-100 d-none d-md-block"></div>
+                                <div class="col d-flex align-items-center justify-content-center">@item.Amount</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="card bg-warning">
-    <div class="card-body text-center">
-      <p class="card-text">Some text inside the second card</p>
+
+    <div class="col">
+        @foreach(var transaction in Model.Transactions)
+        {
+            <div class="d-flex">
+                <div class="card mb-3" style="width: 100%">
+                    <div class="card-header">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-4">
+                                    <h4>Сегодня</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        Test
+                    </div>
+                </div>
+            </div>
+        }
     </div>
-  </div>
-  <div class="card bg-success">
-    <div class="card-body text-center">
-      <p class="card-text">Some text inside the third card</p>
-    </div>
-  </div>
-  <div class="card bg-danger">
-    <div class="card-body text-center">
-      <p class="card-text">Some text inside the fourth card</p>
-    </div>
-  </div>
-  <div class="card bg-light">
-    <div class="card-body text-center">
-      <p class="card-text">Some text inside the fifth card</p>
-    </div>
-  </div>
-  <div class="card bg-info">
-    <div class="card-body text-center">
-      <p class="card-text">Some text inside the sixth card</p>
-    </div>
-  </div>
 </div>
+
+<style>
+    i {
+      border-radius: 20px;
+      font-size: 25px;
+      text-align: center;
+      border-radius:50%;
+      display:inline-block;
+      padding:10px;
+      height: 50px;
+    }
+
+    img {
+      display:block;
+    }
+    
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(2, 5vw);
+        grid-gap: 15px;
+    }
+    
+    .gallery__img {
+        object-fit: cover;
+    }
+
+    .btn-circle.btn-xl {
+    width: 70px;
+    height: 70px;
+    padding: 10px 16px;
+    border-radius: 35px;
+    font-size: 24px;
+    line-height: 1.33;
+}
+
+.btn-circle {
+    width: 30px;
+    height: 30px;
+    padding: 6px 0px;
+    border-radius: 15px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.42857;
+}
+
+</style>

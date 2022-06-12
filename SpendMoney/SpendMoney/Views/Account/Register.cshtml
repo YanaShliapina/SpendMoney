@@ -1,7 +1,7 @@
 ﻿@using SpendMoney.ViewModels
 @model RegisterViewModel
 
-<section class="" style="background-color: #eee;">
+<section class="" style="">
   <div class="container h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
       <div class="col-lg-12 col-xl-11">
@@ -17,8 +17,27 @@
                   <div class="d-flex flex-row align-items-center mb-4">
                     <i class="fas fa-user fa-lg me-3 fa-fw"></i>
                     <div class="form-outline flex-fill mb-0">
+                      <input type="text" asp-for="FirstName" class="form-control"/>
+                      <label class="form-label" asp-for="FirstName">Your First Name</label>
+                      <p class="text-danger">@Html.ValidationMessageFor(m => m.FirstName)</p>
+                    </div>
+                  </div>
+                  
+                  <div class="d-flex flex-row align-items-center mb-4">
+                    <i class="fas fa-user fa-lg me-3 fa-fw"></i>
+                    <div class="form-outline flex-fill mb-0">
+                      <input type="text" asp-for="LastName" class="form-control"/>
+                      <label class="form-label" asp-for="LastName">Your Last Name</label>
+                      <p class="text-danger">@Html.ValidationMessageFor(m => m.LastName)</p>
+                    </div>
+                  </div>
+                  
+                  <div class="d-flex flex-row align-items-center mb-4">
+                    <i class="fas fa-user fa-lg me-3 fa-fw"></i>
+                    <div class="form-outline flex-fill mb-0">
                       <input type="text" asp-for="UserName" class="form-control"/>
                       <label class="form-label" asp-for="UserName">Your Username</label>
+                      <p class="text-danger">@Html.ValidationMessageFor(m => m.UserName)</p>
                     </div>
                   </div>
 
@@ -27,6 +46,7 @@
                     <div class="form-outline flex-fill mb-0">
                       <input type="email" asp-for="Email" class="form-control" />
                       <label class="form-label" asp-for="Email">Your Email</label>
+                      <p class="text-danger">@Html.ValidationMessageFor(m => m.Email)</p>
                     </div>
                   </div>
 
@@ -35,6 +55,7 @@
                     <div class="form-outline flex-fill mb-0">
                       <input type="password" asp-for="Password" class="form-control" />
                       <label class="form-label" asp-for="Password">Password</label>
+                      <p class="text-danger">@Html.ValidationMessageFor(m => m.Password)</p>
                     </div>
                   </div>
 
@@ -43,6 +64,7 @@
                     <div class="form-outline flex-fill mb-0">
                       <input type="password" asp-for="SecondPassword" class="form-control" />
                       <label class="form-label" asp-for="SecondPassword">Repeat your password</label>
+                      <p class="text-danger">@Html.ValidationMessageFor(m => m.SecondPassword)</p>
                     </div>
                   </div>
 
@@ -54,7 +76,7 @@
                   </div>
 
                   <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
-                      @*<input type="submit" class="btn btn-primary btn-lg" value="Submit"/>*@
+                    @*<input type="submit" class="btn btn-primary btn-lg" value="Submit"/>*@
                     <button type="submit" class="btn btn-primary btn-lg">Register</button>
                   </div>
 

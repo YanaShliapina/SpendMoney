@@ -50,6 +50,12 @@ namespace SpendMoney.Controllers
             var request = _mapper.Map<LoginDto>(loginRequest);
             var user = await _accountService.Login(request);
 
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+                return View(loginRequest);
+            }
+
             var roleList = await _accountService.GetRoleListAsync(user);
 
             if (roleList.Contains(AuthorizationConstants.Roles.ADMIN))
@@ -60,9 +66,6 @@ namespace SpendMoney.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-
-            ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
-            return View(loginRequest);
         }
 
         private async Task<IdentityResult> AssignRoles(string email, string role)
@@ -92,12 +95,18 @@ namespace SpendMoney.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel registerRequest)
         {
+            if (registerRequest.Password != registerRequest.SecondPassword)
+            {
+                ModelState.AddModelError(nameof(RegisterViewModel.SecondPassword), "Mismatch");
+                return View(registerRequest);
+            }
+            
             var request = _mapper.Map<RegisterDto>(registerRequest);
             var result = await _accountService.Register(request);
 
             if (result.Succeeded)
             {
-                return View();
+                return RedirectToAction("Login");
             }
 
             return View();

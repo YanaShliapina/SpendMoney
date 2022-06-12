@@ -23,6 +23,7 @@ namespace SpendMoney.Core.Entities
         public virtual DbSet<AspNetUserLogin> AspNetUserLogins { get; set; } = null!;
         public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; } = null!;
         public virtual DbSet<Category> Categories { get; set; } = null!;
+        public virtual DbSet<Currency> Currencies { get; set; } = null!;
         public virtual DbSet<Image> Images { get; set; } = null!;
         public virtual DbSet<MoneyAccount> MoneyAccounts { get; set; } = null!;
         public virtual DbSet<Transaction> Transactions { get; set; } = null!;
@@ -162,8 +163,16 @@ namespace SpendMoney.Core.Entities
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Categories)
                     .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_user_category_AspNetUsers");
+            });
+
+            modelBuilder.Entity<Currency>(entity =>
+            {
+                entity.ToTable("currency");
+
+                entity.Property(e => e.Name).HasMaxLength(50);
+
+                entity.Property(e => e.ShortName).HasMaxLength(10);
             });
 
             modelBuilder.Entity<Image>(entity =>
@@ -181,6 +190,8 @@ namespace SpendMoney.Core.Entities
                     .HasColumnName("name");
 
                 entity.Property(e => e.Path).HasColumnName("path");
+
+                entity.Property(e => e.Type).HasColumnName("type");
             });
 
             modelBuilder.Entity<MoneyAccount>(entity =>
@@ -189,6 +200,8 @@ namespace SpendMoney.Core.Entities
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
+                entity.Property(e => e.CurrencyId).HasColumnName("currency_id");
+
                 entity.Property(e => e.Description).HasColumnName("description");
 
                 entity.Property(e => e.ImageId).HasColumnName("image_id");
@@ -196,6 +209,12 @@ namespace SpendMoney.Core.Entities
                 entity.Property(e => e.Name)
                     .HasMaxLength(50)
                     .HasColumnName("name");
+
+                entity.HasOne(d => d.Currency)
+                    .WithMany(p => p.MoneyAccounts)
+                    .HasForeignKey(d => d.CurrencyId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_money_accounts_currency");
 
                 entity.HasOne(d => d.Image)
                     .WithMany(p => p.MoneyAccounts)
@@ -230,6 +249,10 @@ namespace SpendMoney.Core.Entities
 
                 entity.Property(e => e.Type).HasColumnName("type");
 
+                entity.Property(e => e.UserId)
+                    .HasMaxLength(450)
+                    .HasColumnName("user_id");
+
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.TransactionAccounts)
                     .HasForeignKey(d => d.AccountId)
@@ -251,6 +274,12 @@ namespace SpendMoney.Core.Entities
                     .HasForeignKey(d => d.Type)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_transactions_transaction_types");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Transactions)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_transactions_User");
             });
 
             modelBuilder.Entity<TransactionType>(entity =>

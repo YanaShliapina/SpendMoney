@@ -72,7 +72,7 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
     endpoints.MapGet("/", context =>
     {
-        return Task.Run(() => context.Response.Redirect("/Account/Index"));
+        return Task.Run(() => context.Response.Redirect("/Home/Index"));
     });
 });
 

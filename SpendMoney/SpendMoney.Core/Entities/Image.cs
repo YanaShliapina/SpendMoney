@@ -15,6 +15,7 @@ namespace SpendMoney.Core.Entities
         public string? Name { get; set; }
         public string? Desription { get; set; }
         public string? Path { get; set; }
+        public int Type { get; set; }
 
         public virtual ICollection<Category> Categories { get; set; }
         public virtual ICollection<MoneyAccount> MoneyAccounts { get; set; }

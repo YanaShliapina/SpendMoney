@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using SpendMoney.Core.Constants;
+using Microsoft.EntityFrameworkCore;
 
 namespace SpendMoney.Core.Services
 {
@@ -32,6 +33,9 @@ namespace SpendMoney.Core.Services
 
         public async Task<List<string>> GetRoleListAsync(ApplicationUser user) =>
             (await _userManager.GetRolesAsync(user)).ToList();
+
+        public async Task<ApplicationUser> GetCurrentUser(ClaimsPrincipal claimsPrincipal) =>
+            await _userManager.GetUserAsync(claimsPrincipal);
 
         public async Task<ApplicationUser> Login(LoginDto loginRequest)
         {
@@ -55,8 +59,7 @@ namespace SpendMoney.Core.Services
         public async Task<IdentityResult> Register(RegisterDto registerRequest)
         {
             var user = _mapper.Map<ApplicationUser>(registerRequest);
-            user.FirstName = "";
-            user.LastName = "";
+            user.ProfileImage = "/default_profile_image.png";
             var result = await _userManager.CreateAsync(user, registerRequest.Password);
 
             var registeredUser = await _userManager.FindByEmailAsync(registerRequest.Email);
@@ -64,6 +67,26 @@ namespace SpendMoney.Core.Services
             await _context.SaveChangesAsync();
 
             return result;
+        }
+
+        public async Task<List<UserAccountDto>> GetAccountsByUserId(string userId)
+        {
+            var foundUserAccounts = await _context.UserMoneyAccounts
+                    .Include(x => x.TransactionAccounts)
+                    .Include(x => x.Account)
+                    .ThenInclude(x => x.Image)
+                    .Include(x => x.Account)
+                    .ThenInclude(x => x.Currency)
+                    .Where(x => x.UserId == userId).ToListAsync();
+
+            return _mapper.Map<List<UserAccountDto>>(foundUserAccounts);
+        }
+
+        public async Task<List<TransactionDto>> GetTransactionList(TransactionFilter filter)
+        {
+            var foundTrans = await _context.Transactions.Where(x => x.UserId == filter.UserId).ToListAsync();
+
+            return _mapper.Map<List<TransactionDto>>(foundTrans);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace SpendMoney.Core.Entities
         }
 
         public int Id { get; set; }
-        public string UserId { get; set; } = null!;
+        public string? UserId { get; set; }
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public decimal? Amount { get; set; }
@@ -20,7 +20,7 @@ namespace SpendMoney.Core.Entities
         public int ImageId { get; set; }
 
         public virtual Image Image { get; set; } = null!;
-        public virtual AspNetUser User { get; set; } = null!;
+        public virtual AspNetUser? User { get; set; }
         public virtual ICollection<Transaction> Transactions { get; set; }
     }
 }

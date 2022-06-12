@@ -8,6 +8,8 @@ namespace SpendMoney.Extensions
         public static void AddServices(this IServiceCollection services)
         {
             services.AddScoped<IAccountServicecs, AccountService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IImageService, ImageService>();
         }
     }
 }

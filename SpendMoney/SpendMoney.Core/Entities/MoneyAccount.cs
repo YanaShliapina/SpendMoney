@@ -14,7 +14,9 @@ namespace SpendMoney.Core.Entities
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public int ImageId { get; set; }
+        public int CurrencyId { get; set; }
 
+        public virtual Currency Currency { get; set; } = null!;
         public virtual Image Image { get; set; } = null!;
         public virtual ICollection<UserMoneyAccount> UserMoneyAccounts { get; set; }
     }

@@ -12,7 +12,8 @@ public class ImageService : IImageService
     private IMapper _mapper;
     private enum ImageType
     {
-        Category
+        Category,
+        UserAccount
     }
     
     public ImageService(ApplicationDbContext context, IMapper mapper)
@@ -21,11 +22,17 @@ public class ImageService : IImageService
         _mapper = mapper;
     }
 
-    public async Task<List<ImageDto>> GetCategoryImageList()
+    public async Task<List<ImageDto>> GetCategoryImageList() =>
+        await GetImagesByType(ImageType.Category);
+
+    public async Task<List<ImageDto>> GetUserAccountImageList() =>
+        await GetImagesByType(ImageType.UserAccount);
+
+    private async Task<List<ImageDto>> GetImagesByType(ImageType type)
     {
-        var foundImages = await _context.Images.Where(x => x.Type == (int)ImageType.Category).ToListAsync();
+        var foundImages = await _context.Images.Where(x => x.Type == (int)type).ToListAsync();
         var preparedImages = _mapper.Map<List<ImageDto>>(foundImages);
-        
+
         foreach (var preparedImage in preparedImages)
         {
             preparedImage.Path = string.Concat(ImageConstants.ROOT_PATH, preparedImage.Path);

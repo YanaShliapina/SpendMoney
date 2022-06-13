@@ -24,6 +24,7 @@ namespace SpendMoney.Core.Entities
         public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; } = null!;
         public virtual DbSet<Category> Categories { get; set; } = null!;
         public virtual DbSet<Currency> Currencies { get; set; } = null!;
+        public virtual DbSet<CurrencyExchange> CurrencyExchanges { get; set; } = null!;
         public virtual DbSet<Image> Images { get; set; } = null!;
         public virtual DbSet<MoneyAccount> MoneyAccounts { get; set; } = null!;
         public virtual DbSet<Transaction> Transactions { get; set; } = null!;
@@ -175,6 +176,25 @@ namespace SpendMoney.Core.Entities
                 entity.Property(e => e.ShortName).HasMaxLength(10);
             });
 
+            modelBuilder.Entity<CurrencyExchange>(entity =>
+            {
+                entity.ToTable("currency_exchange");
+
+                entity.Property(e => e.Rate).HasColumnType("decimal(7, 2)");
+
+                entity.HasOne(d => d.FromNavigation)
+                    .WithMany(p => p.CurrencyExchangeFromNavigations)
+                    .HasForeignKey(d => d.From)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_currency_exchange_currency");
+
+                entity.HasOne(d => d.ToNavigation)
+                    .WithMany(p => p.CurrencyExchangeToNavigations)
+                    .HasForeignKey(d => d.To)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_currency_exchange_currency1");
+            });
+
             modelBuilder.Entity<Image>(entity =>
             {
                 entity.ToTable("images");
@@ -199,6 +219,10 @@ namespace SpendMoney.Core.Entities
                 entity.ToTable("money_accounts");
 
                 entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Color)
+                    .HasMaxLength(50)
+                    .HasColumnName("color");
 
                 entity.Property(e => e.CurrencyId).HasColumnName("currency_id");
 
@@ -287,6 +311,8 @@ namespace SpendMoney.Core.Entities
                 entity.ToTable("transaction_types");
 
                 entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.InternalEnumValue).HasColumnName("internal_enum_value");
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(50)

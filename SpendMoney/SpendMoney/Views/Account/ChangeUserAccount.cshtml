@@ -1,0 +1,149 @@
+﻿@model ChangeUserAccountViewModel
+
+<div class="container h-100">
+    <div class="text-center mb-3" style="width: 100%">
+        <h4>Змінення у рахунку</h4>    
+    </div>
+    
+    <form class="mx-1 mx-md-4" asp-controller="Account" asp-action="ChangeUserAccount" method="post">
+        <div class="mb-3">
+            <label class="form-label" asp-for="Name">Назва рахунку</label>
+            <input type="text" asp-for="Name" class="form-control"/>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.Name)</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Description">Опис</label>
+            <input type="text" asp-for="Description" class="form-control"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="CurrencyId">Валюта рахунку</label>
+            <select asp-for="CurrencyId" class="form-control" style="">
+                <option class="placeholder" disabled value="" style="display: none;">Оберіть валюту рахунку</option>
+                @foreach(var currency in Model.Currencies)
+                {
+                    if(currency.Id == Model.CurrencyId)
+                    {
+                        <option selected value="@currency.Id">@currency.Name</option>
+                    }
+                    else
+                    {
+                     <option value="@currency.Id">@currency.Name</option>   
+                    }
+                }
+                
+            </select>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.CurrencyId)</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Amount">Баланс рахунку</label>
+            <input type="number" asp-for="Amount" step="0.01" class="form-control"/>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Color">Оберіть колір рахунку</label> <br/>
+            <input id="b" type="color" name="favcolor" value="@Model.Color" style="width: 100%">
+            <input asp-for="Color" type="hidden" value="@Model.Color"/>
+        </div>
+        
+        <div class="mb-3">Виберіть зображення рахунку</div>
+        <div class="container-fluid">
+            <div class="gallery">
+                @foreach (var item in Model.Images)
+                {
+                    <div class="gallery__item gallery__item--1" id="@item.Id">
+                        <i class="category-images gallery__img"><img src="@item.Path" width="30"/></i>
+                    </div>
+                }
+            </div>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.ImageId)</p>
+        </div>
+        
+        <input asp-for="ImageId" type="hidden" value="@Model.ImageId"/>
+        <input asp-for="AccountId" type="hidden" value="@Model.AccountId"/>
+
+        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+            <button type="submit" class="btn btn-primary btn-lg">Зберегти</button>
+        </div>
+    </form>
+</div>
+
+<style>
+
+
+    .selected .gallery__img {
+        box-shadow: 10px 10px 5px #ccc;
+    }
+    .container {
+       max-width: 70% !important;/*Set your own width %; */
+    }
+    
+    i {
+      border-radius: 20px;
+      font-size: 25px;
+      text-align: center;
+      margin-right: 10px;
+      border-radius:50%;
+      display:inline-block;
+      padding:10px;
+      height: 50px;
+    }
+    
+    img {
+      display:block;
+    }
+    
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(2, 5vw);
+        grid-gap: 15px;
+    }
+    
+    .gallery__img {
+        object-fit: cover;
+    }
+</style>
+
+<script>
+$(document).ready(function(){
+    var items = $('.gallery__item');
+    var imageItems = $('.gallery__img');
+    var id = $('#ImageId').val();
+    var color = $('#Color').val();
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].id == id) {
+            items[i].classList.add('selected');
+        }
+    }
+
+    for (let i = 0; i < imageItems.length; i++) {
+        imageItems[i].style.background = color;
+    }
+
+})
+
+document.getElementById("b").addEventListener("input", function() {
+  let s = document.getElementsByClassName("category-images");
+  
+  for (let i=0, max=s.length; i < max; i++) {
+       s[i].style.background = this.value;
+  }                                 
+  
+  document.getElementById("Color").value = this.value;
+})
+
+$(".gallery__item").click(function(){
+    let categoryImages = document.getElementsByClassName("gallery__item");
+    
+    for (let i=0, max=categoryImages.length; i < max; i++) {
+           categoryImages[i].classList.remove('selected');
+      }
+    
+     $(this).addClass("selected");
+    document.getElementById("ImageId").value = this.id;
+})
+</script>

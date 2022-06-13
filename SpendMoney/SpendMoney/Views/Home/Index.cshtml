@@ -11,7 +11,7 @@
                                 <h4>Рахунки</h4>
                             </div>
                             <div class="col-md-6 col-sm-6">
-                                <a class="btn btn-success" asp-controller="Category" asp-action="CreateCategory">Додати рахунок</a>
+                                <a class="btn btn-success" asp-controller="Account" asp-action="CreateUserAccount">Додати рахунок</a>
                             </div>
                         </div>
                     </div>
@@ -25,10 +25,10 @@
                                 <div class="col d-flex align-items-center justify-content-center">@item.Name</div>
                                 <div class="w-100 d-none d-md-block"></div>
                                 <div class="gallery__item gallery__item--1 col d-flex align-items-center justify-content-center" id="@item.AccountId">
-                                    <i class="category-images gallery__img"><img src="@item.Image" width="30"/></i>
+                                    <i id="@item.AccountId" class="category-images gallery__img user-account" style="background: @item.Color;"><img src="@item.Image" width="30"/></i>
                                 </div>
                                 <div class="w-100 d-none d-md-block"></div>
-                                <div class="col d-flex align-items-center justify-content-center">@item.Amount</div>
+                                <small class="col d-flex align-items-center justify-content-center">@item.Amount @item.CurrencyShortName</small>
                             </div>
                         }
                     </div>
@@ -60,10 +60,10 @@
                                 <div class="col d-flex align-items-center justify-content-center">@item.Name</div>
                                 <div class="w-100 d-none d-md-block"></div>
                                 <div class="gallery__item gallery__item--1 col d-flex align-items-center justify-content-center" id="@item.Id">
-                                    <i class="category-images gallery__img" style="background: @item.Color;"><img src="@item.Image" width="30"/></i>
+                                    <i class="category-images gallery__img user-category" style="background: @item.Color;"><img src="@item.Image" width="30"/></i>
                                 </div>
                                 <div class="w-100 d-none d-md-block"></div>
-                                <div class="col d-flex align-items-center justify-content-center">@item.Amount</div>
+                                <small class="col d-flex align-items-center justify-content-center">@item.Amount UAH</small>
                             </div>
                         }
                     </div>
@@ -74,24 +74,75 @@
     </div>
 
     <div class="col">
-        @foreach(var transaction in Model.Transactions)
+        
+        @if((Model.Transactions?.Count ?? 0) > 0)
         {
-            <div class="d-flex">
-                <div class="card mb-3" style="width: 100%">
-                    <div class="card-header">
-                        <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-4">
-                                    <h4>Сегодня</h4>
+            foreach(var transactionDate in Model.Transactions.OrderByDescending(x => x.Date).Select(x => x.Date.Date).Distinct().ToList())
+            {
+                <div class="d-flex">
+                    <div class="card mb-3" style="width: 100%">
+                        <div class="card-header">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <h4>@transactionDate.ToString("yyyy-MM-dd")</h4>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        Test
+                        <div class="card-body">
+                            <ol class="list-group list-group">
+                                @foreach (var transaction in Model.Transactions.OrderByDescending(x => x.Date).Where(x => x.Date.Date == transactionDate.Date))
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-start">
+
+                                        <div class="row" style="width: 100%">
+                                            <div class="col-4">
+                                                <div>@transaction.UserAccount.Name</div>
+                                                <span class="fw-bold">
+                                                    @if(transaction.TransactionType == (int)TransactionTypes.Add)
+                                                    {
+                                                        <span>Поповнення</span>
+                                                    }
+                                                    else if(transaction.TransactionType == (int)TransactionTypes.Spend && transaction.Category != null)
+                                                    {
+                                                        <span>@transaction.Category.Name</span>
+                                                    }
+                                                    else if(transaction.TransactionType == (int)TransactionTypes.Spend && transaction.Category == null)
+                                                    {
+                                                        <span>Зняття</span>
+                                                    }
+                                                    else if(transaction.TransactionType == (int)TransactionTypes.Transfer)
+                                                    {
+                                                        <span>Перерахування</span>
+                                                    }
+                                                </span>
+                                            </div>
+
+                                            <div class="col">
+                                                @transaction.Description
+                                            </div>
+                                        </div>
+
+                                        @if(transaction.TransactionType == (int)TransactionTypes.Add)
+                                        {
+                                            <span class="badge bg-success rounded-pill">+ @transaction.Amount</span>
+                                        }
+                                        else if(transaction.TransactionType == (int)TransactionTypes.Spend)
+                                        {
+                                            <span class="badge bg-danger rounded-pill">- @transaction.Amount</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary rounded-pill">@transaction.Amount</span>
+                                        }
+                                    </li>
+                                }
+                            </ol>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }   
         }
     </div>
 </div>
@@ -141,4 +192,90 @@
     line-height: 1.42857;
 }
 
+#popup {
+    position: absolute;
+    display: none;
+    z-index: 100;
+    background-color: white;
+}
+
+#popup-category {
+    position: absolute;
+    display: none;
+    z-index: 100;
+    background-color: white;
+}
+
 </style>
+
+<div id="popup">
+    <div class="card">
+        <div class="card-body">
+            <a id="popup-change-btn" asp-action="ChangeUserAccount" asp-controller="Account" class="btn btn-outline-secondary"><img src="/images/change_icon.png" width="20px" /></a>
+            <a id="popup-add-btn" asp-action="AddMoneyTransactionToAccount" asp-controller="Transaction" class="btn btn-outline-success"><img src="/images/add-icon.png" width="20px" /></a>
+            <a id="popup-remove-btn" asp-action="RemoveMoneyTransactionFromAccount" asp-controller="Transaction" class="btn btn-outline-danger"><img src="/images/remove-icon.png" width="20px" /></a>
+            <a id="popup-trans-btn" asp-action="TransferToAccount" asp-controller="Transaction" class="btn btn-outline-secondary"><img src="/images/button-transfer.png" width="20px" /></a>
+            <a id="close-popup" class="btn btn-outline-warning"><img src="/images/krest.png" width="20px" /></a>
+        </div>
+    </div>
+</div>
+
+<div id="popup-category">
+    <div class="card">
+        <div class="card-body">
+            <a id="popup-change-btn" asp-action="ChangeUserAccount" asp-controller="Account" class="btn btn-outline-secondary"><img src="/images/change_icon.png" width="20px" /></a>
+            <a id="popup-remove-btn" asp-action="RemoveMoneyTransactionFromAccount" asp-controller="Transaction" class="btn btn-outline-danger"><img src="/images/remove-icon.png" width="20px" /></a>
+            <a id="close-popup-category" class="btn btn-outline-warning"><img src="/images/krest.png" width="20px" /></a>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready( function() {
+        $('.user-account').on('click', function(e) { 
+            $('#popup').offset({ top: e.pageY, left:  e.pageX}).fadeIn(); 
+
+            var _href = $("#popup-change-btn").attr("href");
+
+            if (!_href.includes('?id=' + this.id)) {
+                _href = _href.split('?')[0];
+                $('#popup-change-btn').attr('href', _href + '?id=' + this.id);
+            }
+
+            var _href = $("#popup-add-btn").attr("href");
+
+            if (!_href.includes('?accountId=')) {
+                _href = _href.split('?')[0];
+                $('#popup-add-btn').attr('href', _href + '?accountId=' + this.id);
+            }
+
+            var _href = $("#popup-remove-btn").attr("href");
+
+            if (!_href.includes('?accountId=')) {
+                _href = _href.split('?')[0];
+                $('#popup-remove-btn').attr('href', _href + '?accountId=' + this.id);
+            }
+
+            var _href = $("#popup-trans-btn").attr("href");
+
+            if (!_href.includes('?accountId=')) {
+                _href = _href.split('?')[0];
+                $('#popup-trans-btn').attr('href', _href + '?accountId=' + this.id);
+            }
+        });
+
+        $('#close-popup').on('click', function(e) { 
+            $('#popup').removeAttr('style');
+        });
+
+
+        //-------
+        $('.user-category').on('click', function(e) {
+            $('#popup-category').offset({ top: e.pageY, left: e.pageX }).fadeIn();
+        });
+
+         $('#close-popup-category').on('click', function(e) { 
+            $('#popup-category').removeAttr('style');
+        });
+    });
+</script>

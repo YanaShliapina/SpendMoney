@@ -1,0 +1,86 @@
+﻿@model TransferToAccountViewModel
+
+<div class="container d-flex justify-content-center">
+    <div class="card" style="width: 50%">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-2">
+                    <i style="background: @Model.Account.Color"><img src="@Model.Account.Image" width="30px"/></i>
+                </div>
+                <div class="col">
+                    <h5>Додавання коштів до рахунку @Model.Account.Name</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body d-flex justify-content-center">
+            <form class="mx-1 mx-md-4" asp-controller="Transaction" asp-action="TransferToAccount" method="post">
+                <div class="d-flex row">
+                <div class="col">
+                    <div class="d-flex flex-column">
+                        <div>Поточний баланс:</div>
+                        <div><small>@Model.Account.Amount @Model.Account.CurrencyShortName</small></div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <label class="form-label" asp-for="Amount">Сума поповнення</label>
+                    <input type="number" asp-for="Amount" step="0.01" class="form-control"/>
+                </div>
+
+                <div class="w-100"></div>
+
+                <div class="col">
+                    <label class="form-label" asp-for="Description">Опис</label>
+                    <input type="text" asp-for="Description" step="0.01" class="form-control"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" asp-for="ToAccountId">Категорія витрат</label>
+                    <select asp-for="ToAccountId" class="form-control" style="">
+                            @{
+                                bool first = true;
+                                foreach(var category in Model.UserAccounts)
+                                {
+                                    if (first)
+                                    {
+                                        <option selected value="@category.AccountId">@category.Name</option>
+                                        first = false;
+                                    }
+                                    else
+                                    {
+                                     <option value="@category.AccountId">@category.Name</option>   
+                                    }
+                                }   
+                            }
+                
+                    </select>
+                    <p class="text-danger">@Html.ValidationMessageFor(m => m.ToAccountId)</p>
+                </div>
+                
+                <div class="w-100"></div>
+                <input type="hidden" asp-for="Account.AccountId" value="@Model.Account.AccountId" />
+
+                
+                <button type="submit" class="btn btn-primary mt-3">Перевести</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    i {
+      border-radius: 20px;
+      font-size: 25px;
+      text-align: center;
+      border-radius:50%;
+      display:inline-block;
+      padding:10px;
+      height: 50px;
+    }
+
+    img {
+      display:block;
+    }
+</style>

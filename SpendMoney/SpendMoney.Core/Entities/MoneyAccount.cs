@@ -15,6 +15,7 @@ namespace SpendMoney.Core.Entities
         public string? Description { get; set; }
         public int ImageId { get; set; }
         public int CurrencyId { get; set; }
+        public string Color { get; set; } = null!;
 
         public virtual Currency Currency { get; set; } = null!;
         public virtual Image Image { get; set; } = null!;

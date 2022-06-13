@@ -19,5 +19,10 @@ namespace SpendMoney.Core.Services.Interfaces
         Task<ApplicationUser> GetCurrentUser(ClaimsPrincipal claimsPrincipal);
         Task<List<UserAccountDto>> GetAccountsByUserId(string userId);
         Task<List<TransactionDto>> GetTransactionList(TransactionFilter filter);
+        Task<UserAccountDto> CreateUserAccount(CreateUserAccountRQ request);
+        Task<UserAccountDto> GetAccountById(int accountId);
+        Task AddAmount(int accountId, decimal amountToAdd);
+        Task<UserAccountDto> UpdateUserAccount(UpdateUserAccountRQ request);
+        Task RemoveAmount(int accountId, decimal amountToRemove);
     }
 }

@@ -11,11 +11,25 @@ namespace SpendMoney.Mapping
     {
         public AutoMapping()
         {
-            CreateMap<Transaction, TransactionDto>();
+            CreateMap<ChangeUserAccountViewModel, UpdateUserAccountRQ>();
+            CreateMap<UserAccountDto, ChangeUserAccountViewModel>();
+            CreateMap<CreateTransactionRQ, Transaction>()
+                .ForMember(dest => dest.TransferAccountId, src => src.MapFrom(x => x.TransferToAccountId));
+            CreateMap<CreateUserAccountViewModel, CreateUserAccountRQ>();
+            CreateMap<CreateUserAccountRQ, UserMoneyAccount>();
+            CreateMap<CreateUserAccountRQ, MoneyAccount>();
+            CreateMap<Currency, CurrencyDto>();
+            CreateMap<Transaction, TransactionDto>()
+                .ForMember(dest => dest.UserAccount, src => src.MapFrom(x => x.Account))
+                .ForMember(dest => dest.TransactionType, src => src.MapFrom(x => x.TypeNavigation.InternalEnumValue));
             CreateMap<UserMoneyAccount, UserAccountDto>()
-                .ForMember(dest => dest.Amount, src => src.MapFrom(x => x.TransactionAccounts.Sum(s => s.Amount)))
+                .ForMember(dest => dest.Color, src => src.MapFrom(x => x.Account.Color))
+                .ForMember(dest => dest.Name, src => src.MapFrom(x => x.Account.Name))
+                .ForMember(dest => dest.Description, src => src.MapFrom(x => x.Account.Description))
+                .ForMember(dest => dest.Amount, src => src.MapFrom(x => x.Amount))
                 .ForMember(dest => dest.Image, src => src.MapFrom(x => string.Concat(ImageConstants.ROOT_PATH, x.Account.Image.Path)))
-                .ForMember(dest => dest.Image, src => src.MapFrom(x => x.Account.Currency.ShortName));
+                .ForMember(dest => dest.CurrencyShortName, src => src.MapFrom(x => x.Account.Currency.ShortName))
+                .ForMember(dest => dest.ImageId, src => src.MapFrom(x => x.Account.ImageId));
             CreateMap<Image, ImageDto>();
             CreateMap<CreateCategoryRQ, Category>();
             CreateMap<CreateCategoryViewModel, CreateCategoryRQ>();

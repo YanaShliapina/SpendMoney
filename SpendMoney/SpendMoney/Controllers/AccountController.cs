@@ -15,17 +15,22 @@ namespace SpendMoney.Controllers
     public class AccountController : Controller
     {
         private readonly IAccountServicecs _accountService;
+        private readonly ICurrencyService _currencyService;
+        private readonly IImageService _imageService;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public AccountController(IAccountServicecs accountService, IMapper mapper, 
-            ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public AccountController(IAccountServicecs accountService, IMapper mapper,
+            ApplicationDbContext context, UserManager<ApplicationUser> userManager, 
+            ICurrencyService currencyService, IImageService imageService)
         {
             _accountService = accountService;
             _mapper = mapper;
             _context = context;
             _userManager = userManager;
+            _currencyService = currencyService;
+            _imageService = imageService;
         }
 
 
@@ -110,6 +115,92 @@ namespace SpendMoney.Controllers
             }
 
             return View();
+        }
+
+        [HttpGet]
+        [Route("CreateUserAccount")]
+        public async Task<IActionResult> CreateUserAccount()
+        {
+            var foundCurrencies = await _currencyService.GetCurrencies();
+            var images = await _imageService.GetUserAccountImageList();
+
+            var viewModel = new CreateUserAccountViewModel
+            {
+                Currencies = new List<CurrencyDto>(foundCurrencies),
+                Images = new List<ImageDto>(images)
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route("CreateUserAccount")]
+        public async Task<IActionResult> CreateUserAccount(CreateUserAccountViewModel createUserAccountViewModel)
+        {
+            ModelState.Remove("Images");
+            ModelState.Remove("Currencies");
+
+            if (ModelState.IsValid == false)
+            {
+                var foundCurrencies = await _currencyService.GetCurrencies();
+                var images = await _imageService.GetUserAccountImageList();
+
+                createUserAccountViewModel.Currencies = new List<CurrencyDto>(foundCurrencies);
+                createUserAccountViewModel.Images = new List<ImageDto>(images);
+
+                return View(createUserAccountViewModel);
+            }
+
+            var request = _mapper.Map<CreateUserAccountRQ>(createUserAccountViewModel);
+            var user = await _accountService.GetCurrentUser(User);
+            request.UserId = user.Id;
+
+            await _accountService.CreateUserAccount(request);
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        [Route("ChangeUserAccount")]
+        public async Task<IActionResult> ChangeUserAccount(int id)
+        {
+            var account = await _accountService.GetAccountById(id);
+            var foundCurrencies = await _currencyService.GetCurrencies();
+            var images = await _imageService.GetUserAccountImageList();
+
+            var viewModel = _mapper.Map<ChangeUserAccountViewModel>(account);
+            viewModel.CurrencyId = foundCurrencies.First(x => x.ShortName == account.CurrencyShortName).Id;
+
+            viewModel.Images = new List<ImageDto>(images);
+            viewModel.Currencies = new List<CurrencyDto>(foundCurrencies);
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route("ChangeUserAccount")]
+        public async Task<IActionResult> ChangeUserAccount(ChangeUserAccountViewModel viewModel)
+        {
+            ModelState.Remove("Images");
+            ModelState.Remove("Currencies");
+            ModelState.Remove("Image");
+            ModelState.Remove("CurrencyShortName");
+
+            if (ModelState.IsValid == false)
+            {
+                var foundCurrencies = await _currencyService.GetCurrencies();
+                var images = await _imageService.GetUserAccountImageList();
+
+                viewModel.Currencies = new List<CurrencyDto>(foundCurrencies);
+                viewModel.Images = new List<ImageDto>(images);
+
+                return View(viewModel);
+            }
+
+            //update account details
+            var request = _mapper.Map<UpdateUserAccountRQ>(viewModel);
+            await _accountService.UpdateUserAccount(request);
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }

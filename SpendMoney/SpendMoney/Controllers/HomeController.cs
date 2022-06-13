@@ -38,7 +38,8 @@ namespace SpendMoney.Controllers
             var viewModel = new UserAccountDetailsViewModel()
             {
                 UserAccounts = new List<UserAccountDto>(userAccounts),
-                UserCategoryList = new List<CategoryDto>(foundCats)
+                UserCategoryList = new List<CategoryDto>(foundCats),
+                Transactions = new List<TransactionDto>(userTrans)
             };
 
             return View(viewModel);

@@ -1,21 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SpendMoney.Core.DTOs;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SpendMoney.Core.DTOs
+namespace SpendMoney.ViewModels
 {
-    public class UserAccountDto
+    public class ChangeUserAccountViewModel
     {
         public int AccountId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public int ImageId { get; set; }
         public string Image { get; set; }
         public decimal Amount { get; set; }
         public string CurrencyShortName { get; set; }
         public string Color { get; set; }
+
+        [Required]
+        public int CurrencyId { get; set; }
+        [Required]
+        public int ImageId { get; set; }
+        public List<ImageDto> Images { get; set; }
+        public List<CurrencyDto> Currencies { get; set; }
     }
 }

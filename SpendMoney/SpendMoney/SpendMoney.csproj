@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="Views\Category\" />
-    <Folder Include="Views\Transaction\" />
     <Folder Include="Views\Statistic\" />
     <Folder Include="wwwroot\css\" />
     <Folder Include="wwwroot\images\" />

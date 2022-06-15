@@ -132,5 +132,158 @@ namespace SpendMoney.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        [HttpGet]
+        [Route("AddMoneyToCategory")]
+        public async Task<IActionResult> AddMoneyToCategory(int categoryId)
+        {
+            var user = await _accountService.GetCurrentUser(User);
+            var category = await _categoryService.GetCategoryById(categoryId);
+            var userAccounts = await _accountService.GetAccountsByUserId(user.Id);
+
+            var viewModel = new AddMoneyToCategoryViewModel
+            {
+                Category = category,
+                UserAccounts = userAccounts
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route("AddMoneyToCategory")]
+        public async Task<IActionResult> AddMoneyToCategory(AddMoneyToCategoryViewModel viewModel)
+        {
+            ModelState.Remove("UserAccounts");
+            ModelState.Remove("Category.Name");
+            ModelState.Remove("Category.Color");
+            ModelState.Remove("Category.Image");
+            ModelState.Remove("Category.Description");
+
+            var user = await _accountService.GetCurrentUser(User);
+
+            if (ModelState.IsValid == false)
+            {
+                var category = await _categoryService.GetCategoryById(viewModel.Category.Id);
+                var userAccounts = await _accountService.GetAccountsByUserId(user.Id);
+
+                viewModel.Category = category;
+                viewModel.UserAccounts = userAccounts;
+
+                return View(viewModel);
+            }
+
+            var transactionId = await _transactionService.CreateTransaction(new CreateTransactionRQ
+            {
+                AccountId = viewModel.AccountId,
+                Description = viewModel.Description,
+                UserId = user.Id,
+                TransactionType = TransactionTypes.Spend,
+                Amount = viewModel.Amount,
+                CategoryId = viewModel.Category.Id
+            });
+
+            await _accountService.RemoveAmount(viewModel.AccountId, viewModel.Amount);
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        [Route("History")]
+        public async Task<IActionResult> History()
+        {
+            //set accounts and cats
+            var userId = (await _accountService.GetCurrentUser(User)).Id;
+            var accs = await _accountService.GetAccountsByUserId(userId);
+            var cats = await _categoryService.GetCategoryListByUserId(userId);
+
+            var foundTransactions = await _transactionService.GetTransactionByFilter(new TransactionFilter
+            {
+                UserId = (await _accountService.GetCurrentUser(User)).Id
+            });
+
+            var transactionsForChart = foundTransactions.Where(x => x.TransactionType == (int)TransactionTypes.Spend).ToList();
+            var allSum = transactionsForChart.Sum(x => x.Amount);
+            var categoryNameList = transactionsForChart.Select(x => x.Category.Name.ToString()).Distinct().ToList();
+
+            List<decimal> values = new List<decimal>();
+            
+            foreach (var catname in categoryNameList)
+            {
+                var s = transactionsForChart.Where(x => x.Category.Name == catname).ToList().Sum(x => x.Amount);
+                values.Add(Math.Round(((s / allSum) * 100), 2));
+            }
+
+            var categoryNameListForChart = String.Join(',', categoryNameList);
+            var valuesForChart = String.Join(',', values);
+
+            return View(new TransactionHistoryViewModel
+            {
+                UserAccounts = accs,
+                Categories = cats,
+                Transactions = foundTransactions,
+                CategoryListForChart = categoryNameListForChart,
+                CategoryValueListForChart = valuesForChart
+            });
+        }
+
+        [HttpPost]
+        [Route("History")]
+        public async Task<IActionResult> History(TransactionHistoryViewModel viewModel)
+        {
+            List<int> accountIds = new List<int>();
+            List<int> categoryIds = new List<int>();
+            DateTime? startDate = null;
+            DateTime? endDate = null;
+
+            if (!String.IsNullOrEmpty(viewModel.StartDate))
+            {
+                startDate = DateTime.Parse(viewModel.StartDate);
+            }
+
+            if (!String.IsNullOrEmpty(viewModel.EndDate))
+            {
+                endDate = DateTime.Parse(viewModel.EndDate);
+            }
+
+            if (!String.IsNullOrEmpty(viewModel.AccountId))
+            {
+                if (viewModel.AccountId[0] == ',')
+                {
+                    viewModel.AccountId = viewModel.AccountId.Remove(0, 1);
+                }
+                
+                viewModel.AccountId.Split(',').ToList().ForEach(x => accountIds.Add(Convert.ToInt32(x)));
+            }
+
+            if (!String.IsNullOrEmpty(viewModel.CategoryId))
+            {
+                if (viewModel.CategoryId[0] == ',')
+                {
+                    viewModel.CategoryId = viewModel.CategoryId.Remove(0, 1);
+                }
+                
+                viewModel.CategoryId.Split(',').ToList().ForEach(x => accountIds.Add(Convert.ToInt32(x)));
+            }
+
+            var foundTransactions = await _transactionService.GetTransactionByFilter(new TransactionFilter
+            {
+                AccountIds = accountIds,
+                CategoryIds = categoryIds,
+                StartDate = startDate,
+                EndDate = endDate,
+                UserId = (await _accountService.GetCurrentUser(User)).Id
+            });
+
+            var userId = (await _accountService.GetCurrentUser(User)).Id;
+            var accs = await _accountService.GetAccountsByUserId(userId);
+            var cats = await _categoryService.GetCategoryListByUserId(userId);
+
+            viewModel.Transactions = foundTransactions;
+            viewModel.UserAccounts = accs;
+            viewModel.Categories = cats;
+
+            return View(viewModel);
+        }
     }
 }

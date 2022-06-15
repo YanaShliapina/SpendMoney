@@ -83,6 +83,40 @@ namespace SpendMoney.Core.Services
             return transaction.Id;
         }
 
+        public async Task<List<TransactionDto>> GetTransactionByFilter(TransactionFilter filter)
+        {
+            var query = _context.Transactions
+                .Include(x => x.Account)
+                .ThenInclude(x => x.Account)
+                .Include(x => x.Category)
+                .Include(x => x.TypeNavigation)
+                .Where(x => x.UserId == filter.UserId);
+
+            if((filter?.AccountIds?.Count ?? 0) > 0)
+            {
+                query = query.Where(x => filter.AccountIds.Contains(x.AccountId));
+            }
+
+            if ((filter?.CategoryIds?.Count ?? 0) > 0)
+            {
+                query = query.Where(x => filter.CategoryIds.Contains((int)x.CategoryId));
+            }
+
+            if(filter.StartDate != null)
+            {
+                query = query.Where(x => x.Date.Date >= filter.StartDate.Value.Date);
+            }
+
+            if (filter.EndDate != null)
+            {
+                query = query.Where(x => x.Date.Date <= filter.EndDate.Value.Date);
+            }
+
+            var result = query.ToList();
+
+            return _mapper.Map<List<TransactionDto>>(result);
+        }
+
         public async Task<TransactionDto> GetTransactionById(int id)
         {
             var foundTransaction = await _context.Transactions.FirstAsync(x => x.Id == id);

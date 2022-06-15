@@ -1,0 +1,81 @@
+﻿@model AddMoneyToCategoryViewModel
+
+<div class="container d-flex justify-content-center">
+    <div class="card" style="width: 50%">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-2">
+                    <i style="background: @Model.Category.Color"><img src="@Model.Category.Image" width="30px"/></i>
+                </div>
+                <div class="col">
+                    <h5>Додавання витрат коштів до категорії @Model.Category.Name</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body d-flex justify-content-center">
+            <form class="mx-1 mx-md-4" asp-controller="Transaction" asp-action="AddMoneyToCategory" method="post">
+                <div class="d-flex row">
+
+                <div class="col">
+                    <label class="form-label" asp-for="Amount">Сума</label>
+                    <input type="number" asp-for="Amount" step="0.01" class="form-control"/>
+                </div>
+
+                <div class="w-100"></div>
+
+                <div class="col">
+                    <label class="form-label" asp-for="Description">Опис</label>
+                    <input type="text" asp-for="Description" step="0.01" class="form-control"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" asp-for="AccountId">Оберіть рахунок</label>
+                    <select asp-for="AccountId" class="form-control" style="">
+                            @{
+                                bool first = true;
+                                foreach(var account in Model.UserAccounts)
+                                {
+                                    if (first)
+                                    {
+                                        <option selected value="@account.AccountId">@account.Name</option>
+                                        first = false;
+                                    }
+                                    else
+                                    {
+                                     <option value="@account.AccountId">@account.Name</option>   
+                                    }
+                                }   
+                            }
+                
+                    </select>
+                    <p class="text-danger">@Html.ValidationMessageFor(m => m.AccountId)</p>
+                </div>
+                
+                <div class="w-100"></div>
+                <input type="hidden" asp-for="AccountId" value="@Model.AccountId" />
+                <input type="hidden" asp-for="Category.Id" value="@Model.Category.Id" />
+
+                
+                <button type="submit" class="btn btn-primary mt-3">Підтвердити</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    i {
+      border-radius: 20px;
+      font-size: 25px;
+      text-align: center;
+      border-radius:50%;
+      display:inline-block;
+      padding:10px;
+      height: 50px;
+    }
+
+    img {
+      display:block;
+    }
+</style>

@@ -1,0 +1,366 @@
+﻿@model TransactionHistoryViewModel
+
+<div class="container-fluid">
+    <div class="row d-flex justify-content-center">
+        <div class="col">
+            <div class="dropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" 
+                      id="dropdownMenu1" data-toggle="dropdown" 
+                      aria-haspopup="true" aria-expanded="true"
+                      style="width: 100%">Рахунки</button>
+
+              <ul id="accountList" class="dropdown-menu account-checkbox-menu allow-focus" aria-labelledby="dropdownMenu1">
+
+                    @foreach (var acc in Model.UserAccounts)
+                    {
+                         <li id="@acc.AccountId" >
+                          <label>
+                            <input type="checkbox">@acc.Name</label>
+                        </li>   
+                    }
+  
+              </ul>
+
+            </div>
+        </div>
+        <div class="col">
+            <div class="dropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" 
+                      id="dropdownMenu1" data-toggle="dropdown" 
+                      aria-haspopup="true" aria-expanded="true"
+                      style="width: 100%">Категорії</button>
+
+              <ul id="catList" class="dropdown-menu category-checkbox-menu allow-focus" aria-labelledby="dropdownMenu1">
+  
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <li id="@cat.Id" >
+                            <label><input type="checkbox">@cat.Name</label>
+                        </li>   
+                    }
+    
+              </ul>
+
+            </div>
+        </div>
+
+        <div class="w-100"></div>
+
+        <div class="col">
+            <div class="form-group">
+                <label for="inputDate">Дата початку</label>
+                <input id="start-date-input" type="date" class="form-control">
+              </div>
+        </div>
+
+        <div class="col">
+            <div class="form-group">
+                <label for="inputDate">Дата кінця</label>
+                <input id="end-date-input" type="date" class="form-control">
+              </div>
+        </div>
+
+        <div class="w-100"></div>
+
+        <div class="col d-flex justify-content-center">
+            <form asp-controller="Transaction" asp-action="History" method="post">
+                <input type="hidden" asp-for="AccountId" value="@Model.AccountId" />
+                <input type="hidden" asp-for="CategoryId" value="@Model.CategoryId" />
+                <input type="hidden" asp-for="StartDate" value="@Model.StartDate" />
+                <input type="hidden" asp-for="EndDate" value="@Model.EndDate" />
+
+                <input type="hidden" asp-for="CategoryListForChart" value="@Model.CategoryListForChart" />
+                <input type="hidden" asp-for="CategoryValueListForChart" value="@Model.CategoryValueListForChart" />
+
+                <button id="test" type="submit" class="btn btn-primary mt-3">Пошук</button>
+            </form>
+        </div>
+    </div>
+    <div class="w-100"></div>
+
+    <div class="row">
+        <div class="col-7">
+            <table class="table">
+                <thead>
+                <tr>
+                  <th scope="col">Категорія</th>
+                  <th scope="col">Рахунок</th>
+                  <th scope="col">Опис</th>
+                  <th scope="col">Дата</th>
+                  <th scope="col">Сума</th>
+                </tr>
+              </thead>
+                <tbody>
+                    @if((Model?.Transactions?.Count ?? 0) > 0)
+                    {
+                        foreach (var tran in Model.Transactions.OrderByDescending(x => x.Date).ToList())
+                        {
+                            String rowClass = String.Empty;
+
+                            if(tran.TransactionType == (int)TransactionTypes.Add)
+                            {
+                                rowClass = "table-success";
+                            }
+                            else if(tran.TransactionType == (int)TransactionTypes.Spend && tran.Category != null)
+                            {
+                                rowClass = "table-danger";
+                            }
+                            else if(tran.TransactionType == (int)TransactionTypes.Spend && tran.Category == null)
+                            {
+                                rowClass = "table-danger";
+                            }
+                            else if(tran.TransactionType == (int)TransactionTypes.Transfer)
+                            {
+                                rowClass = "table-secondary";
+                            } 
+
+                            <tr class="@rowClass">
+                                <td>
+                                    @if(!string.IsNullOrEmpty(tran?.Category?.Name))
+                                    {
+                                        <span>@tran.Category.Name</span>
+                                    }
+
+                                    @if(tran.TransactionType == (int)TransactionTypes.Transfer)
+                                    {
+                                        <span>Перерахування до рахунку @Model.UserAccounts.First(x => x.AccountId == tran.TransferAccountId).Name</span>
+                                    } 
+                                </td>
+                                <td>@tran.UserAccount.Name</td>
+                                <td>@tran.Description</td>
+                                <td>@tran.Date.ToString("yyyy-MM-dd")</td>
+                                <td>@tran.Amount</td>
+                            </tr>
+                        }   
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col">
+            <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
+        </div>
+    </div>
+</div>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+
+<style>
+    .category-checkbox-menu li label,
+    .account-checkbox-menu li label {
+        display: block;
+        padding: 3px 10px;
+        clear: both;
+        font-weight: normal;
+        line-height: 1.42857143;
+        color: #333;
+        white-space: nowrap;
+        margin:0;
+        transition: background-color .4s ease;
+    }
+    .category-checkbox-menu li input,
+    .account-checkbox-menu li input, {
+        margin: 0px 5px;
+        top: 2px;
+        position: relative;
+    }
+
+    .category-menu li.active label, 
+    .account-menu li.active label{
+        background-color: #cbcbff;
+        font-weight:bold;
+    }
+
+    .category-checkbox-menu li label:hover,
+    .category-checkbox-menu li label:focus,
+    .account-checkbox-menu li label:hover,
+    .account-checkbox-menu li label:focus {
+        background-color: #f5f5f5;
+    }
+
+    .category-checkbox-menu li.active label:hover,
+    .category-checkbox-menu li.active label:focus
+    .account-checkbox-menu li.active label:hover,
+    .account-checkbox-menu li.active label:focus {
+        background-color: #b8b8ff;
+    }
+</style>
+
+<script>
+$(document).ready(function() {
+    var xValues = $("#CategoryListForChart").val().split(',');
+    var yValues = $("#CategoryValueListForChart").val().split(',');
+    var barColors = [
+      "#b91d47",
+      "#00aba9",
+      "#2b5797",
+      "#e8c3b9",
+      "#1e7145"
+    ];
+
+    new Chart("myChart", {
+      type: "pie",
+      data: {
+        labels: xValues,
+        datasets: [{
+          backgroundColor: barColors,
+          data: yValues
+        }]
+      },
+      options: {
+        title: {
+          display: true,
+          text: "World Wide Wine Production 2018"
+        }
+      }
+    });
+});
+    
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<script>
+    //load data
+    if ($('#StartDate').val().length > 0) {
+        console.log($('#StartDate').val());
+        let s = $('#StartDate').val().split('-');
+
+        let y = s[0];
+        let m = s[1];
+        let d = s[2];
+
+        if (m.length == 1) {
+            m = '0' + m;
+        }
+
+        if (d.length == 1) {
+            d = '0' + d;
+        }
+
+        $('#start-date-input').val(y + '-' + m + '-' + d);
+    }
+
+    if ($('#EndDate').val().length > 0) {
+        console.log($('#EndDate').val());
+        let s = $('#EndDate').val().split('-');
+
+        let y = s[0];
+        let m = s[1];
+        let d = s[2];
+
+        if (m.length == 1) {
+            m = '0' + m;
+        }
+
+        if (d.length == 1) {
+            d = '0' + d;
+        }
+
+        $('#end-date-input').val(y + '-' + m + '-' + d);
+    }
+
+    if($("#AccountId").val().length > 0) {
+        var x = new Array();
+        x = $("#AccountId").val().split(",");
+
+        let items = $(".account-checkbox-menu input");
+        
+        for (let i = 0; i < items.length; i++) {
+            console.log(items[i].closest('li').id);
+            if(x.includes(items[i].closest('li').id)){
+                items[i].closest("li").classList.add('active');
+                items[i].checked = true;
+            }
+        }
+    }
+
+    if($("#CategoryId").val().length > 0) {
+        var x = new Array();
+        x = $("#CategoryId").val().split(",");
+
+        let items = $(".category-checkbox-menu input");
+        
+        for (let i = 0; i < items.length; i++) {
+            console.log(items[i].closest('li').id);
+            if(x.includes(items[i].closest('li').id)){
+                items[i].closest("li").classList.add('active');
+                items[i].checked = true;
+            }
+        }
+    }
+
+    $('#start-date-input').change(function() {
+        if($('#start-date-input').val().length > 0){
+            var date = new Date($('#start-date-input').val());
+            var day = date.getDate();
+            var month = date.getMonth() + 1;
+            var year = date.getFullYear();
+
+            $("#StartDate").val([year, month, day].join('-'));
+        } else {
+            $("#StartDate").val('');
+        }
+    });
+
+$('#end-date-input').change(function() {
+    if ($('#end-date-input').val().length > 0) {
+        var date = new Date($('#end-date-input').val());
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+
+        $("#EndDate").val([year, month, day].join('-'));
+    } else {
+            $("#EndDate").val('');
+        }
+});
+
+    $(".account-checkbox-menu").on("change", "input[type='checkbox']", function() {
+       $(this).closest("li").toggleClass("active", this.checked);
+       
+        if ($(this).closest('li').hasClass('active')) {
+            let id = $(this).closest('li').attr('id');
+            var x = new Array();
+            x = $("#AccountId").val().split(",");
+            x.push(id);
+            $("#AccountId").val(x.join(','));
+        } else {
+            let id = $(this).closest('li').attr('id');
+            var x = new Array();
+            x = $("#AccountId").val().split(",");
+            x = x.filter(function(elem){
+               return elem != id; 
+            });
+            $("#AccountId").val(x.join(','));
+        }
+    });
+
+    $(".category-checkbox-menu").on("change", "input[type='checkbox']", function() {
+       $(this).closest("li").toggleClass("active", this.checked);
+       
+        if ($(this).closest('li').hasClass('active')) {
+            let id = $(this).closest('li').attr('id');
+            var x = new Array();
+            x = $("#CategoryId").val().split(",");
+            x.push(id);
+            $("#CategoryId").val(x.join(','));
+        } else {
+            let id = $(this).closest('li').attr('id');
+            var x = new Array();
+            x = $("#CategoryId").val().split(",");
+            x = x.filter(function(elem){
+               return elem != id; 
+            });
+            $("#CategoryId").val(x.join(','));
+        }
+    });
+
+    $(document).on('click', '.allow-focus', function (e) {
+      e.stopPropagation();
+    });
+
+$('#main-wrapper').removeClass('container').addClass('container-fluid');
+</script>

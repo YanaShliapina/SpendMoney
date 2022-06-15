@@ -14,6 +14,7 @@ namespace SpendMoney.Core.DTOs
         public int AccountId { get; set; }
         public decimal Amount { get; set; }
         public DateTime Date { get; set; }
+        public int? TransferAccountId { get; set; }
         public UserAccountDto UserAccount { get; set; }
         public CategoryDto Category { get; set; }
     }

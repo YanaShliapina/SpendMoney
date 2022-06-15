@@ -12,5 +12,6 @@ namespace SpendMoney.Core.Services.Interfaces
     {
         Task<int> CreateTransaction(CreateTransactionRQ request);
         Task<TransactionDto> GetTransactionById(int id);
+        Task<List<TransactionDto>> GetTransactionByFilter(TransactionFilter filter);
     }
 }

@@ -11,6 +11,8 @@ namespace SpendMoney.Mapping
     {
         public AutoMapping()
         {
+            CreateMap<ChangeCategoryViewModel, UpdateCategoryRQ>();
+            CreateMap<CategoryDto, ChangeCategoryViewModel>();
             CreateMap<ChangeUserAccountViewModel, UpdateUserAccountRQ>();
             CreateMap<UserAccountDto, ChangeUserAccountViewModel>();
             CreateMap<CreateTransactionRQ, Transaction>()
@@ -20,6 +22,7 @@ namespace SpendMoney.Mapping
             CreateMap<CreateUserAccountRQ, MoneyAccount>();
             CreateMap<Currency, CurrencyDto>();
             CreateMap<Transaction, TransactionDto>()
+                .ForMember(dest => dest.TransactionId, src => src.MapFrom(x => x.Id))
                 .ForMember(dest => dest.UserAccount, src => src.MapFrom(x => x.Account))
                 .ForMember(dest => dest.TransactionType, src => src.MapFrom(x => x.TypeNavigation.InternalEnumValue));
             CreateMap<UserMoneyAccount, UserAccountDto>()

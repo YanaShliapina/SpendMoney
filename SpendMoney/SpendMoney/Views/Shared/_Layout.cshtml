@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/20.1.55/fluent.css" />
     <!-- Syncfusion ASP.NET Core controls scripts -->
     <script src="https://cdn.syncfusion.com/ej2/20.1.55/dist/ej2.min.js"></script>
-
     <style>
         .gallery__img {
             cursor: pointer;
@@ -32,19 +31,22 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Домашня сторінка</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Transaction" asp-action="History">Історія транзакцій</a>
+                            </li>
+                        }    
                         <li class="nav-item">
                             @if(User.Identity.IsAuthenticated)
                             {
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Logout</a>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Вийти</a>
                             }
                             else
                             {
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Увійти</a>
                             }
                             
                         </li>
@@ -53,7 +55,7 @@
             </div>
         </nav>
     </header>
-    <div class="container">
+    <div id="main-wrapper" class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

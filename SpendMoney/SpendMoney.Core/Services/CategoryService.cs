@@ -49,4 +49,31 @@ public class CategoryService : ICategoryService
             .ToListAsync();
         return _mapper.Map<List<CategoryDto>>(foundCats);
     }
+
+    public async Task<CategoryDto> GetCategoryById(int categoryId, string userId = "")
+    {
+        var foundCat = await _context.Categories
+            .Include(x => x.Image)
+            .Include(x => x.Transactions.Where(t => t.UserId == userId))
+            .FirstAsync(x => x.Id == categoryId);
+
+        return _mapper.Map<CategoryDto>(foundCat);
+    }
+
+    public async Task<CategoryDto> UpdateCategory(UpdateCategoryRQ request)
+    {
+        var foundCat = await _context.Categories
+            .Include(x => x.Image)
+            .Include(x => x.Transactions.Where(t => t.UserId == request.UserId))
+            .FirstAsync(x => x.Id == request.Id);
+
+        foundCat.Description = request.Description;
+        foundCat.Name = request.Name;
+        foundCat.Color = request.Color;
+        foundCat.ImageId = request.ImageId;
+
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<CategoryDto>(foundCat);
+    }
 }

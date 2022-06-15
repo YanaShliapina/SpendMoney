@@ -7,4 +7,6 @@ public interface ICategoryService
 {
     Task<CategoryDto> CreateCategory(CreateCategoryRQ request);
     Task<List<CategoryDto>> GetCategoryListByUserId(string userId);
+    Task<CategoryDto> GetCategoryById(int categoryId, string userId = "");
+    Task<CategoryDto> UpdateCategory(UpdateCategoryRQ request);
 }

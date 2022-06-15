@@ -8,4 +8,5 @@ public class CategoryDto
     public string Color { get; set; }
     public string Image { get; set; }
     public decimal Amount { get; set; }
+    public int ImageId { get; set; }
 }

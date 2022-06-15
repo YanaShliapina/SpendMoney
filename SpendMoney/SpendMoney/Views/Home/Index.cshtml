@@ -21,7 +21,7 @@
                     <div class="gallery">
                         @foreach (var item in Model.UserAccounts)
                         {
-                            <div class="row justify-content-center">
+                            <div class="row justify-content-center" style="min-width: 110px;">
                                 <div class="col d-flex align-items-center justify-content-center">@item.Name</div>
                                 <div class="w-100 d-none d-md-block"></div>
                                 <div class="gallery__item gallery__item--1 col d-flex align-items-center justify-content-center" id="@item.AccountId">
@@ -56,11 +56,11 @@
                     <div class="gallery">
                         @foreach (var item in Model.UserCategoryList)
                         {
-                            <div class="row justify-content-center">
+                            <div class="row justify-content-center" style="min-width: 110px;">
                                 <div class="col d-flex align-items-center justify-content-center">@item.Name</div>
                                 <div class="w-100 d-none d-md-block"></div>
                                 <div class="gallery__item gallery__item--1 col d-flex align-items-center justify-content-center" id="@item.Id">
-                                    <i class="category-images gallery__img user-category" style="background: @item.Color;"><img src="@item.Image" width="30"/></i>
+                                    <i id="@item.Id" class="category-images gallery__img user-category" style="background: @item.Color;"><img src="@item.Image" width="30"/></i>
                                 </div>
                                 <div class="w-100 d-none d-md-block"></div>
                                 <small class="col d-flex align-items-center justify-content-center">@item.Amount UAH</small>
@@ -223,8 +223,8 @@
 <div id="popup-category">
     <div class="card">
         <div class="card-body">
-            <a id="popup-change-btn" asp-action="ChangeUserAccount" asp-controller="Account" class="btn btn-outline-secondary"><img src="/images/change_icon.png" width="20px" /></a>
-            <a id="popup-remove-btn" asp-action="RemoveMoneyTransactionFromAccount" asp-controller="Transaction" class="btn btn-outline-danger"><img src="/images/remove-icon.png" width="20px" /></a>
+            <a id="popup-cat-change-btn" asp-action="ChangeCategory" asp-controller="Category" class="btn btn-outline-secondary"><img src="/images/change_icon.png" width="20px" /></a>
+            <a id="popup-cat-remove-btn" asp-action="AddMoneyToCategory" asp-controller="Transaction" class="btn btn-outline-danger"><img src="/images/remove-icon.png" width="20px" /></a>
             <a id="close-popup-category" class="btn btn-outline-warning"><img src="/images/krest.png" width="20px" /></a>
         </div>
     </div>
@@ -272,6 +272,20 @@
         //-------
         $('.user-category').on('click', function(e) {
             $('#popup-category').offset({ top: e.pageY, left: e.pageX }).fadeIn();
+
+            var _href = $("#popup-cat-change-btn").attr("href");
+
+            if (!_href.includes('?categoryId=' + this.id)) {
+                _href = _href.split('?')[0];
+                $('#popup-cat-change-btn').attr('href', _href + '?categoryId=' + this.id);
+            }
+
+            var _href = $("#popup-cat-remove-btn").attr("href");
+
+            if (!_href.includes('?categoryId=' + this.id)) {
+                _href = _href.split('?')[0];
+                $('#popup-cat-remove-btn').attr('href', _href + '?categoryId=' + this.id);
+            }
         });
 
          $('#close-popup-category').on('click', function(e) { 

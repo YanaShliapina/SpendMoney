@@ -78,9 +78,9 @@
     </div>
     <div class="w-100"></div>
 
-    <div class="row">
+    <div class="row mb-5">
         <div class="col-7">
-            <table class="table">
+            <table class="table table-hover">
                 <thead>
                 <tr>
                   <th scope="col">Категорія</th>
@@ -88,6 +88,8 @@
                   <th scope="col">Опис</th>
                   <th scope="col">Дата</th>
                   <th scope="col">Сума</th>
+                  <th scope="col"></th>
+                  <th scope="col"></th>
                 </tr>
               </thead>
                 <tbody>
@@ -130,6 +132,8 @@
                                 <td>@tran.Description</td>
                                 <td>@tran.Date.ToString("yyyy-MM-dd")</td>
                                 <td>@tran.Amount</td>
+                                <td><a class="btn btn-outline-secondary" asp-action="ChangeTransaction" asp-route-id="@tran.TransactionId"><img src="/images/change_icon.png" width="20px" /></a></td>
+                                <td><a class="btn btn-outline-warning" asp-action="RemoveTransaction" asp-route-id="@tran.TransactionId"><img src="/images/krest.png" width="20px" /></a></td>
                             </tr>
                         }   
                     }
@@ -225,7 +229,6 @@ $(document).ready(function() {
 <script>
     //load data
     if ($('#StartDate').val().length > 0) {
-        console.log($('#StartDate').val());
         let s = $('#StartDate').val().split('-');
 
         let y = s[0];

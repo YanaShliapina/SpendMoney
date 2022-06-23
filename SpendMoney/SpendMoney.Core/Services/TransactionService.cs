@@ -16,11 +16,15 @@ namespace SpendMoney.Core.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly ICategoryService _categoryService;
+        private readonly IAccountServicecs _accountService;
 
-        public TransactionService(ApplicationDbContext context, IMapper mapper)
+        public TransactionService(ApplicationDbContext context, IMapper mapper, ICategoryService categoryService, IAccountServicecs accountService)
         {
             _context = context;
             _mapper = mapper;
+            _categoryService = categoryService;
+            _accountService = accountService;
         }
 
         public async Task<int> CreateTransaction(CreateTransactionRQ request)
@@ -119,9 +123,164 @@ namespace SpendMoney.Core.Services
 
         public async Task<TransactionDto> GetTransactionById(int id)
         {
-            var foundTransaction = await _context.Transactions.FirstAsync(x => x.Id == id);
+            var foundTransaction = await _context.Transactions
+                .Include(x => x.Account)
+                .ThenInclude(x => x.Account)
+                .Include(x => x.Category)
+                .Include(x => x.TypeNavigation)
+                .FirstAsync(x => x.Id == id);
 
             return _mapper.Map<TransactionDto>(foundTransaction);
+        }
+
+        public async Task<int> RemoveTransaction(int id)
+        {
+            var foundTrans = await _context.Transactions
+                .Include(x => x.Account)
+                .Include(x => x.TypeNavigation)
+                .FirstAsync(x => x.Id == id);
+
+            if(foundTrans.TypeNavigation.InternalEnumValue == (int)TransactionTypes.Spend)
+            {
+                var account = _context.UserMoneyAccounts.First(x => x.Id != foundTrans.AccountId);
+                account.Amount += foundTrans.Amount;
+            }
+            else if(foundTrans.TypeNavigation.InternalEnumValue == (int)TransactionTypes.Add)
+            {
+                var account = _context.UserMoneyAccounts.First(x => x.Id != foundTrans.AccountId);
+                account.Amount -= foundTrans.Amount;
+            }
+            else if(foundTrans.TypeNavigation.InternalEnumValue == (int)TransactionTypes.Transfer)
+            {
+                var account = _context.UserMoneyAccounts.First(x => x.Id != foundTrans.AccountId);
+                account.Amount += foundTrans.Amount;
+
+                var account2 = _context.UserMoneyAccounts.First(x => x.Id != foundTrans.AccountId);
+                account2.Amount -= foundTrans.Amount;
+            }
+
+            _context.Transactions.Remove(foundTrans);
+
+            await _context.SaveChangesAsync();
+
+            return id;
+        }
+
+        public async Task<TransactionDto> UpdateTransaction(TransactionDto updatedTransaction)
+        {
+            var tranId = Convert.ToInt32(updatedTransaction.TransactionId);
+            var initialTran = await _context.Transactions
+                .Include(x => x.Account)
+                .ThenInclude(x => x.Account)
+                .ThenInclude(x => x.Currency)
+                .Include(x => x.Category)
+                .Include(x => x.TypeNavigation)
+                .FirstAsync(x => x.Id == tranId);
+
+            initialTran.Description = updatedTransaction.Description;
+            initialTran.Date = updatedTransaction.Date;
+            initialTran.CategoryId = updatedTransaction.Category.Id == 0 ? null : updatedTransaction.Category.Id;
+
+            if(initialTran.AccountId != updatedTransaction.AccountId)
+            {
+                var newAccount = await _accountService.GetAccountById(updatedTransaction.AccountId);
+
+                if(initialTran.Account.Account.Currency.ShortName != newAccount.CurrencyShortName)
+                {
+                    if(initialTran.Account.Account.Currency.ShortName == "UAH")
+                    {
+                        initialTran.Account.Amount += initialTran.Amount;
+                    }
+                    else
+                    {
+                        var exchangeRate = await _context.CurrencyExchanges
+                            .Include(x => x.FromNavigation)
+                            .Include(x => x.ToNavigation)
+                            .FirstAsync(x => x.FromNavigation.ShortName == initialTran.Account.Account.Currency.ShortName
+                                && x.ToNavigation.ShortName == newAccount.CurrencyShortName);
+
+                        initialTran.Account.Amount += (initialTran.Amount * exchangeRate.Rate);
+                    }
+
+                    var currentTargetAccount = _context.UserMoneyAccounts
+                        .Include(x => x.Account)
+                        .ThenInclude(x => x.Currency)
+                        .First(x => x.AccountId == newAccount.AccountId);
+
+                    if (currentTargetAccount.Account.Currency.ShortName == "UAH")
+                    {
+                        currentTargetAccount.Amount -= updatedTransaction.Amount;
+                    }
+                    else
+                    {
+                        var exchangeRate = await _context.CurrencyExchanges
+                            .Include(x => x.FromNavigation)
+                            .Include(x => x.ToNavigation)
+                            .FirstAsync(x => x.FromNavigation.ShortName == "UAH"
+                                && x.ToNavigation.ShortName == currentTargetAccount.Account.Currency.ShortName);
+
+                        currentTargetAccount.Amount -= Math.Round((updatedTransaction.Amount * exchangeRate.Rate), 2);
+                    }
+                }
+
+                initialTran.AccountId = updatedTransaction.AccountId;
+            }
+            else
+            {
+                initialTran.Amount = updatedTransaction.Amount;
+            }
+
+            if(initialTran.TransferAccountId == null && updatedTransaction.TransferAccountId > 0)
+            {
+                initialTran.TransferAccountId = updatedTransaction.TransferAccountId;
+
+                var transferTargetAccount = _context.UserMoneyAccounts
+                        .Include(x => x.Account)
+                        .ThenInclude(x => x.Currency)
+                        .First(x => x.AccountId == updatedTransaction.TransferAccountId);
+
+                if (transferTargetAccount.Account.Currency.ShortName == "UAH")
+                {
+                    transferTargetAccount.Amount += updatedTransaction.Amount;
+                }
+                else
+                {
+                    var exchangeRate = await _context.CurrencyExchanges
+                        .Include(x => x.FromNavigation)
+                        .Include(x => x.ToNavigation)
+                        .FirstAsync(x => x.FromNavigation.ShortName == "UAH"
+                            && x.ToNavigation.ShortName == transferTargetAccount.Account.Currency.ShortName);
+
+                    transferTargetAccount.Amount += (updatedTransaction.Amount * exchangeRate.Rate);
+                }
+            }
+
+            if (initialTran.TransferAccountId != null && updatedTransaction.Category.Id > 0)
+            {
+                var untransferTargetAccount = _context.UserMoneyAccounts
+                        .Include(x => x.Account)
+                        .ThenInclude(x => x.Currency)
+                        .First(x => x.AccountId == updatedTransaction.TransferAccountId);
+
+                if (untransferTargetAccount.Account.Currency.ShortName == "UAH")
+                {
+                    untransferTargetAccount.Amount -= updatedTransaction.Amount;
+                }
+                else
+                {
+                    var exchangeRate = await _context.CurrencyExchanges
+                        .Include(x => x.FromNavigation)
+                        .Include(x => x.ToNavigation)
+                        .FirstAsync(x => x.FromNavigation.ShortName == "UAH"
+                            && x.ToNavigation.ShortName == untransferTargetAccount.Account.Currency.ShortName);
+
+                    untransferTargetAccount.Amount -= (updatedTransaction.Amount * exchangeRate.Rate);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<TransactionDto>(initialTran);
         }
     }
 }

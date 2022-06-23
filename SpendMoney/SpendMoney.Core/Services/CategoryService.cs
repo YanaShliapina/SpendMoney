@@ -60,6 +60,16 @@ public class CategoryService : ICategoryService
         return _mapper.Map<CategoryDto>(foundCat);
     }
 
+    public async Task<Category> GetCategoryEntityById(int categoryId, string userId = "")
+    {
+        var foundCat = await _context.Categories
+            .Include(x => x.Image)
+            .Include(x => x.Transactions.Where(t => t.UserId == userId))
+            .FirstAsync(x => x.Id == categoryId);
+
+        return foundCat;
+    }
+
     public async Task<CategoryDto> UpdateCategory(UpdateCategoryRQ request)
     {
         var foundCat = await _context.Categories

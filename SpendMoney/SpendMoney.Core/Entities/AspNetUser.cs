@@ -12,6 +12,7 @@ namespace SpendMoney.Core.Entities
             AspNetUserTokens = new HashSet<AspNetUserToken>();
             Categories = new HashSet<Category>();
             Transactions = new HashSet<Transaction>();
+            UserDreams = new HashSet<UserDream>();
             UserMoneyAccounts = new HashSet<UserMoneyAccount>();
             Roles = new HashSet<AspNetRole>();
         }
@@ -40,6 +41,7 @@ namespace SpendMoney.Core.Entities
         public virtual ICollection<AspNetUserToken> AspNetUserTokens { get; set; }
         public virtual ICollection<Category> Categories { get; set; }
         public virtual ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<UserDream> UserDreams { get; set; }
         public virtual ICollection<UserMoneyAccount> UserMoneyAccounts { get; set; }
 
         public virtual ICollection<AspNetRole> Roles { get; set; }

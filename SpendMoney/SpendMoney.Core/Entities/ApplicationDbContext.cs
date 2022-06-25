@@ -29,6 +29,7 @@ namespace SpendMoney.Core.Entities
         public virtual DbSet<MoneyAccount> MoneyAccounts { get; set; } = null!;
         public virtual DbSet<Transaction> Transactions { get; set; } = null!;
         public virtual DbSet<TransactionType> TransactionTypes { get; set; } = null!;
+        public virtual DbSet<UserDream> UserDreams { get; set; } = null!;
         public virtual DbSet<UserMoneyAccount> UserMoneyAccounts { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -273,6 +274,8 @@ namespace SpendMoney.Core.Entities
 
                 entity.Property(e => e.Type).HasColumnName("type");
 
+                entity.Property(e => e.UserDreamId).HasColumnName("user_dream_id");
+
                 entity.Property(e => e.UserId)
                     .HasMaxLength(450)
                     .HasColumnName("user_id");
@@ -299,6 +302,11 @@ namespace SpendMoney.Core.Entities
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_transactions_transaction_types");
 
+                entity.HasOne(d => d.UserDream)
+                    .WithMany(p => p.Transactions)
+                    .HasForeignKey(d => d.UserDreamId)
+                    .HasConstraintName("FK_transactions_UserDream");
+
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Transactions)
                     .HasForeignKey(d => d.UserId)
@@ -317,6 +325,33 @@ namespace SpendMoney.Core.Entities
                 entity.Property(e => e.Name)
                     .HasMaxLength(50)
                     .HasColumnName("name");
+            });
+
+            modelBuilder.Entity<UserDream>(entity =>
+            {
+                entity.ToTable("UserDream");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.CurrentAmount).HasColumnType("decimal(7, 2)");
+
+                entity.Property(e => e.EndDate).HasColumnType("date");
+
+                entity.Property(e => e.Name)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.StartDate).HasColumnType("date");
+
+                entity.Property(e => e.TargetAmount).HasColumnType("decimal(7, 2)");
+
+                entity.Property(e => e.UserId).HasMaxLength(450);
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserDreams)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_UserDream_UserDream");
             });
 
             modelBuilder.Entity<UserMoneyAccount>(entity =>

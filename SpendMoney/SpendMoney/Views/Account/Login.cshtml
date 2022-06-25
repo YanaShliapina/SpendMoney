@@ -11,7 +11,7 @@
       <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
         <form asp-controller="Account" asp-action="Login" method="post">
           <div class="d-flex flex-row align-items-center justify-content-center justify-content-lg-start">
-            <p class="lead fw-normal mb-0 me-3">Sign in with</p>
+            <p class="lead fw-normal mb-0 me-3">Увійти через</p>
             <button type="button" class="btn btn-primary btn-floating mx-1">
               <i class="fab fa-facebook-f"></i>
             </button>
@@ -26,21 +26,21 @@
           </div>
 
           <div class="divider d-flex align-items-center my-4">
-            <p class="text-center fw-bold mx-3 mb-0">Or</p>
+            <p class="text-center fw-bold mx-3 mb-0">Або</p>
           </div>
 
           <!-- Email input -->
           <div class="form-outline mb-4">
             <input type="email" asp-for="Email" class="form-control form-control-lg"
-              placeholder="Enter a valid email address" />
-            <label class="form-label" asp-for="Email">Email address</label>
+              placeholder="Введіть свій email" />
+            <label class="form-label" asp-for="Email">Email адреса</label>
           </div>
 
           <!-- Password input -->
           <div class="form-outline mb-3">
             <input type="password" asp-for="Password" class="form-control form-control-lg"
-              placeholder="Enter password" />
-            <label class="form-label" asp-for="Password">Password</label>
+              placeholder="Введіть пароль" />
+            <label class="form-label" asp-for="Password">Пароль</label>
           </div>
 
           <div class="d-flex justify-content-between align-items-center">
@@ -48,17 +48,17 @@
             <div class="form-check mb-0">
               <input class="form-check-input me-2" type="checkbox" value="" id="form2Example3" />
               <label class="form-check-label" for="form2Example3">
-                Remember me
+                Запам'ятати мене
               </label>
             </div>
-            <a href="#!" class="text-body">Forgot password?</a>
+            <a href="#!" class="text-body">Забули пароль?</a>
           </div>
 
           <div class="text-center text-lg-start mt-4 pt-2">
             <button type="submit" class="btn btn-primary btn-lg"
-              style="padding-left: 2.5rem; padding-right: 2.5rem;">Login</button>
-            <p class="small fw-bold mt-2 pt-1 mb-0">Don't have an account? <a asp-controller="Account" asp-action="Register"
-                class="link-danger">Register</a></p>
+              style="padding-left: 2.5rem; padding-right: 2.5rem;">Увійти</button>
+            <p class="small fw-bold mt-2 pt-1 mb-0">Ще не маєте акаунту? <a asp-controller="Account" asp-action="Register"
+                class="link-danger">Зареєструватись</a></p>
           </div>
 
         </form>

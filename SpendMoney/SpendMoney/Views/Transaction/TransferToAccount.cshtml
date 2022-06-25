@@ -8,7 +8,7 @@
                     <i style="background: @Model.Account.Color"><img src="@Model.Account.Image" width="30px"/></i>
                 </div>
                 <div class="col">
-                    <h5>Додавання коштів до рахунку @Model.Account.Name</h5>
+                    <h5>Переказ коштів з рахунку @Model.Account.Name</h5>
                 </div>
             </div>
         </div>
@@ -24,7 +24,7 @@
                 </div>
 
                 <div class="col">
-                    <label class="form-label" asp-for="Amount">Сума поповнення</label>
+                    <label class="form-label" asp-for="Amount">Сума переказу</label>
                     <input type="number" asp-for="Amount" step="0.01" class="form-control"/>
                 </div>
 
@@ -36,7 +36,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" asp-for="ToAccountId">Категорія витрат</label>
+                    <label class="form-label" asp-for="ToAccountId">Рахунок, на який переказуємо</label>
                     <select asp-for="ToAccountId" class="form-control" style="">
                             @{
                                 bool first = true;

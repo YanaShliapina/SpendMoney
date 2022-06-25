@@ -263,7 +263,7 @@ namespace SpendMoney.Controllers
                     viewModel.CategoryId = viewModel.CategoryId.Remove(0, 1);
                 }
                 
-                viewModel.CategoryId.Split(',').ToList().ForEach(x => accountIds.Add(Convert.ToInt32(x)));
+                viewModel.CategoryId.Split(',').ToList().ForEach(x => categoryIds.Add(Convert.ToInt32(x)));
             }
 
             var foundTransactions = await _transactionService.GetTransactionByFilter(new TransactionFilter
@@ -279,9 +279,28 @@ namespace SpendMoney.Controllers
             var accs = await _accountService.GetAccountsByUserId(userId);
             var cats = await _categoryService.GetCategoryListByUserId(userId);
 
+            var transactionsForChart = foundTransactions.Where(x => x.TransactionType == (int)TransactionTypes.Spend).ToList();
+            var allSum = transactionsForChart.Sum(x => x.Amount);
+            var categoryNameList = transactionsForChart.Select(x => x.Category.Name.ToString()).Distinct().ToList();
+
+            List<decimal> values = new List<decimal>();
+
+            foreach (var catname in categoryNameList)
+            {
+                var s = transactionsForChart.Where(x => x.Category.Name == catname).ToList().Sum(x => x.Amount);
+                values.Add(Math.Round(((s / allSum) * 100), 2));
+            }
+
+            var categoryNameListForChart = String.Join(',', categoryNameList);
+            var valuesForChart = String.Join(',', values);
+
             viewModel.Transactions = foundTransactions;
             viewModel.UserAccounts = accs;
             viewModel.Categories = cats;
+            viewModel.CategoryListForChart = categoryNameListForChart;
+            viewModel.CategoryValueListForChart = valuesForChart;
+
+
 
             var transactionsForChart = foundTransactions.Where(x => x.TransactionType == (int)TransactionTypes.Spend).ToList();
             var allSum = transactionsForChart.Sum(x => x.Amount);

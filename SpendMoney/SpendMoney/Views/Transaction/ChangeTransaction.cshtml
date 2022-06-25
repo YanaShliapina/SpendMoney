@@ -1,0 +1,170 @@
+﻿@model ChangeTransactionViewModel
+
+<div class="container h-100">
+    <div class="text-center mb-3" style="width: 100%">
+        <h4>Редагування транзакції @Model.Transaction.TransactionId</h4>    
+    </div>
+    
+    <form class="mx-1 mx-md-4" asp-action="ChangeTransaction" method="post">
+        <div class="mb-3">
+            <label class="form-label" asp-for="Transaction.Description">Опис</label>
+            <input type="text" asp-for="Transaction.Description" value="@Model.Transaction.Description" class="form-control"/>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.Transaction.Description)</p>
+        </div>
+
+        <input type="hidden" asp-for="Transaction.TransactionId" value="@Model.Transaction.TransactionId" />
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Transaction.TransactionType">Тип транзакції</label>
+            <select asp-for="Transaction.TransactionType" class="form-control" style="">
+                @{
+                    if(Model.Transaction.TransactionType == 0)
+                    {
+                            <option selected value="0">Нарахування</option>
+                    }
+                    else
+                    {
+                            <option value="0">Нарахування</option>
+                    }
+
+                    if(Model.Transaction.TransactionType == 1)
+                    {
+                            <option selected value="1">Витрати</option>
+                    }
+                    else
+                    {
+                            <option value="1">Витрати</option>
+                    }
+
+                    if(Model.Transaction.TransactionType == 2)
+                    {
+                            <option selected value="2">Трансфер</option>
+                    }
+                    else
+                    {
+                            <option value="2">Трансфер</option>
+                    }
+                }               
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Transaction.AccountId">
+                @if(Model.Transaction.TransferAccountId == null)
+                {
+                    <span>Оберіть рахунок</span>
+                }
+                else
+                {
+                    <span>З рахунку</span>
+                }
+            </label>
+            <select asp-for="Transaction.AccountId" class="form-control" style="">
+                    @{
+                        foreach(var account in Model.UserAccounts)
+                        {
+                                <option value="@account.AccountId">@account.Name</option>   
+                        }   
+                    }
+                
+            </select>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.Transaction.AccountId)</p>
+        </div>
+
+        @if(Model.Transaction.TransferAccountId == null)
+        {
+          <div class="mb-3">
+                <label class="form-label" asp-for="Transaction.Category.Id">Оберіть категорію</label>
+                <select asp-for="Transaction.Category.Id" class="form-control" style="">
+                    
+                            @foreach(var category in Model.Categories)
+                            {
+                                if (category.Id == Model.Transaction.Category.Id)
+                                {
+                                    <option selected value="@category.Id">@category.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@category.Id">@category.Name</option>   
+                                }
+                            }   
+                
+                </select>
+                <p class="text-danger">@Html.ValidationMessageFor(m => m.Transaction.AccountId)</p>
+            </div>
+        }
+        else
+        {
+            <div class="mb-3">
+                <label class="form-label" asp-for="Transaction.TransferAccountId">На рахунок</label>
+                <select asp-for="Transaction.TransferAccountId" class="form-control" style="">
+                        @{
+                            bool first2 = true;
+                            foreach(var account in Model.UserAccounts)
+                            {
+                                if (first2)
+                                {
+                                        <option selected value="@account.AccountId">@account.Name</option>
+                                    first2 = false;
+                                }
+                                else
+                                {
+                                        <option value="@account.AccountId">@account.Name</option>   
+                                }
+                            }   
+                        }
+                
+                </select>
+                <p class="text-danger">@Html.ValidationMessageFor(m => m.Transaction.TransferAccountId)</p>
+            </div>
+        }
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Transaction.Date">Дата</label>
+            <input id="date-input" type="date" class="form-control">
+            <input asp-for="Transaction.Date" type="hidden" value="@Model.Transaction.Date.ToString("yyyy-MM-dd")">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Transaction.Amount">Сума</label>
+            <input type="number" asp-for="Transaction.Amount" step="0.01" class="form-control"/>
+        </div>
+
+        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+            <button type="submit" class="btn btn-primary btn-lg">Зберегти</button>
+        </div>
+    </form>
+</div>
+
+<script>
+$('#Transaction_Date').val();
+let s = $('#Transaction_Date').val().split('-');
+
+let y = s[0];
+let m = s[1];
+let d = s[2];
+
+if (m.length == 1) {
+    m = '0' + m;
+}
+
+if (d.length == 1) {
+    d = '0' + d;
+}
+
+$('#date-input').val(y + '-' + m + '-' + d);
+
+$('#date-input').change(function() {
+    if($('#date-input').val().length > 0){
+        var date = new Date($('#date-input').val());
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+
+        $("#Transaction_Date").val([year, month, day].join('-'));
+    } else {
+        //$("#Transaction_Date").val('');
+    }
+});
+
+</script>

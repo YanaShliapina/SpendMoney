@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="~/SpendMoney.styles.css" asp-append-version="true" />
     <script src="~/jquery/jquery.min.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
     <!-- Syncfusion ASP.NET Core controls styles -->
     <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/20.1.55/fluent.css" />
     <!-- Syncfusion ASP.NET Core controls scripts -->
@@ -19,9 +20,9 @@
         }
     </style>
 </head>
-<body>
+<body style="">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mb-3" style="" >
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">SpendMoney</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -30,26 +31,33 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Домашня сторінка</a>
-                        </li>
-                        @if (User.Identity.IsAuthenticated)
+                        @if (User.Identity.IsAuthenticated && !User.Claims.Any(x => x.Value == "Admin"))
                         {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Index">Домашня сторінка</a>
+                            </li>
+
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Transaction" asp-action="History">Історія транзакцій</a>
                             </li>
                         }    
-                        <li class="nav-item">
-                            @if(User.Identity.IsAuthenticated)
-                            {
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Вийти</a>
-                            }
-                            else
-                            {
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Увійти</a>
-                            }
-                            
-                        </li>
+                    </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        @if(User.Identity.IsAuthenticated)
+                        {
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout"><span class="bi bi-person-bounding-box"></span>  @User.Identity.Name</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout"><span class="bi bi-x-square-fill"></span>  Вийти</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register"><span class="bi bi-cloud-plus"></span> Зареєструватися</a>
+                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login"><span class="bi bi-box-arrow-in-right"></span> Увійти</a>
+                        }
                     </ul>
                 </div>
             </div>

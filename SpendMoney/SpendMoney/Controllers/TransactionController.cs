@@ -302,7 +302,80 @@ namespace SpendMoney.Controllers
 
 
 
+            var transactionsForChart = foundTransactions.Where(x => x.TransactionType == (int)TransactionTypes.Spend).ToList();
+            var allSum = transactionsForChart.Sum(x => x.Amount);
+            var categoryNameList = transactionsForChart.Select(x => x.Category.Name.ToString()).Distinct().ToList();
+
+            List<decimal> values = new List<decimal>();
+
+            foreach (var catname in categoryNameList)
+            {
+                var s = transactionsForChart.Where(x => x.Category.Name == catname).ToList().Sum(x => x.Amount);
+                values.Add(Math.Round(((s / allSum) * 100), 2));
+            }
+
+            var categoryNameListForChart = String.Join(',', categoryNameList);
+            var valuesForChart = String.Join(',', values);
+
+            viewModel.CategoryListForChart = categoryNameListForChart;
+            viewModel.CategoryValueListForChart = valuesForChart;
+
             return View(viewModel);
+        }
+
+        [HttpGet]
+        [Route("ChangeTransaction")]
+        public async Task<IActionResult> ChangeTransaction(int id)
+        {
+            var user = await _accountService.GetCurrentUser(User);
+            var transaction = await _transactionService.GetTransactionById(id);
+
+            var viewModel = new ChangeTransactionViewModel
+            {
+                Transaction = transaction,
+                Categories = await _categoryService.GetCategoryListByUserId(user.Id),
+                UserAccounts = await _accountService.GetAccountsByUserId(user.Id)
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route("ChangeTransaction")]
+        public async Task<IActionResult> ChangeTransaction(ChangeTransactionViewModel viewModel)
+        {
+            ModelState.Remove("Categories");
+            ModelState.Remove("UserAccounts");
+            ModelState.Remove("Transaction.UserAccount");
+            ModelState.Remove("Transaction.Category.Name");
+            ModelState.Remove("Transaction.Category.Color");
+            ModelState.Remove("Transaction.Category.Image");
+            ModelState.Remove("Transaction.Category.Description");
+
+            if (!ModelState.IsValid)
+            {
+                var user = await _accountService.GetCurrentUser(User);
+                var transaction = await _transactionService.GetTransactionById(Convert.ToInt32(viewModel.Transaction.TransactionId));
+
+                viewModel.Transaction = transaction;
+                viewModel.Categories = await _categoryService.GetCategoryListByUserId(user.Id);
+                viewModel.UserAccounts = await _accountService.GetAccountsByUserId(user.Id);
+
+                return View(viewModel);
+            }
+
+            await _transactionService.UpdateTransaction(viewModel.Transaction);
+
+            return RedirectToAction("History");
+        }
+
+        [HttpGet]
+        [Route("RemoveTransaction")]
+        public async Task<IActionResult> RemoveTransaction(int id)
+        {
+            await _transactionService.RemoveTransaction(id);
+
+            return RedirectToAction("History");
         }
     }
 }

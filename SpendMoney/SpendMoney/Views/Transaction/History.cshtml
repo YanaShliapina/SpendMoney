@@ -123,10 +123,14 @@
                                         <span>@tran.Category.Name</span>
                                     }
 
-                                    @if(tran.TransactionType == (int)TransactionTypes.Transfer)
+                                    @if(tran.TransactionType == (int)TransactionTypes.Transfer && tran.TransferAccountId != null)
                                     {
                                         <span>Перерахування до рахунку @Model.UserAccounts.First(x => x.AccountId == tran.TransferAccountId).Name</span>
-                                    } 
+                                    }
+                                    else if(tran.TransactionType == (int)TransactionTypes.Transfer && tran.UserDreamId != null)
+                                    {
+                                        <span>@tran.Description</span>
+                                    }
                                 </td>
                                 <td>@tran.UserAccount.Name</td>
                                 <td>@tran.Description</td>

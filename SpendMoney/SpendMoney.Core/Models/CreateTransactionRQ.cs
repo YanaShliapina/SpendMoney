@@ -23,5 +23,6 @@ namespace SpendMoney.Core.Models
         public decimal? Amount { get; set; }
         public string UserId { get; set; }
         public int? TransferToAccountId { get; set; }
+        public int? UserDreamId { get; set; }
     }
 }

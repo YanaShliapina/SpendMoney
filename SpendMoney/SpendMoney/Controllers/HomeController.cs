@@ -16,14 +16,16 @@ namespace SpendMoney.Controllers
         private readonly IAccountServicecs _accountService;
         private readonly ICategoryService _categoryService;
         private readonly IImageService _imageService;
+        private readonly IUserDreamService _userDreamService;
 
-        public HomeController(IAccountServicecs accountService, ICategoryService categoryService, IImageService imageService)
+        public HomeController(IAccountServicecs accountService, ICategoryService categoryService, IImageService imageService, IUserDreamService userDreamService)
         {
             _accountService = accountService;
             _categoryService = categoryService;
             _imageService = imageService;
+            _userDreamService = userDreamService;
         }
-        
+
         [Route("Index")]
         public async Task<IActionResult> Index()
         {
@@ -34,12 +36,14 @@ namespace SpendMoney.Controllers
             {
                 UserId = user.Id
             });
+            var userDreams = await _userDreamService.GetDreamByUserId(user.Id);
 
             var viewModel = new UserAccountDetailsViewModel()
             {
                 UserAccounts = new List<UserAccountDto>(userAccounts),
                 UserCategoryList = new List<CategoryDto>(foundCats),
-                Transactions = new List<TransactionDto>(userTrans)
+                Transactions = new List<TransactionDto>(userTrans),
+                UserDreams = userDreams
             };
 
             return View(viewModel);

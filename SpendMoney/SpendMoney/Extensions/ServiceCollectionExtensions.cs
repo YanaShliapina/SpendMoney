@@ -12,6 +12,7 @@ namespace SpendMoney.Extensions
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<ICurrencyService, CurrencyService>();
             services.AddScoped<ITransactionService, TransactionService>();
+            services.AddScoped<IUserDreamService, UserDreamService>();
         }
     }
 }

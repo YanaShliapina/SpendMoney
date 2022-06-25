@@ -331,9 +331,9 @@ namespace SpendMoney.Core.Entities
             {
                 entity.ToTable("UserDream");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.CurrentAmount).HasColumnType("money");
 
-                entity.Property(e => e.CurrentAmount).HasColumnType("decimal(7, 2)");
+                entity.Property(e => e.EachPayAmount).HasColumnType("money");
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
 
@@ -343,7 +343,7 @@ namespace SpendMoney.Core.Entities
 
                 entity.Property(e => e.StartDate).HasColumnType("date");
 
-                entity.Property(e => e.TargetAmount).HasColumnType("decimal(7, 2)");
+                entity.Property(e => e.TargetAmount).HasColumnType("money");
 
                 entity.Property(e => e.UserId).HasMaxLength(450);
 

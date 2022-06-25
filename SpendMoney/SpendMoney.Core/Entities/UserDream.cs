@@ -18,6 +18,7 @@ namespace SpendMoney.Core.Entities
         public decimal TargetAmount { get; set; }
         public decimal CurrentAmount { get; set; }
         public string UserId { get; set; } = null!;
+        public decimal EachPayAmount { get; set; }
 
         public virtual AspNetUser User { get; set; } = null!;
         public virtual ICollection<Transaction> Transactions { get; set; }

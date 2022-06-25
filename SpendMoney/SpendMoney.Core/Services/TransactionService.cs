@@ -81,6 +81,38 @@ namespace SpendMoney.Core.Services
                 }
             }
 
+            if (request.UserDreamId != null)
+            {
+                var account = _context.UserMoneyAccounts
+                    .Include(x => x.Account)
+                    .ThenInclude(x => x.Currency)
+                    .First(x => x.Id == request.AccountId);
+
+                var toDream = _context.UserDreams
+                    .First(x => x.Id == request.UserDreamId);
+
+                var isNativeCurrency = account.Account.Currency.ShortName == "UAH";
+
+                if (!isNativeCurrency)
+                {
+                    account.Amount -= transaction.Amount;
+
+                    var convertRate = await _context.CurrencyExchanges
+                                    .Include(x => x.FromNavigation)
+                                    .Include(x => x.ToNavigation)
+                                    .FirstOrDefaultAsync(x => x.FromNavigation.Id == account.Account.CurrencyId &&
+                                        x.ToNavigation.ShortName == "UAH");
+
+                    transaction.Amount = Math.Round((decimal)transaction.Amount * convertRate.Rate, 2);
+                }
+                else
+                {
+                    account.Amount -= transaction.Amount;
+                }
+
+                toDream.CurrentAmount += transaction.Amount;
+            }
+
             await _context.Transactions.AddAsync(transaction);
             await _context.SaveChangesAsync();
 
@@ -137,26 +169,82 @@ namespace SpendMoney.Core.Services
         {
             var foundTrans = await _context.Transactions
                 .Include(x => x.Account)
+                .Include(x => x.Category)
                 .Include(x => x.TypeNavigation)
                 .FirstAsync(x => x.Id == id);
 
             if(foundTrans.TypeNavigation.InternalEnumValue == (int)TransactionTypes.Spend)
             {
-                var account = _context.UserMoneyAccounts.First(x => x.Id != foundTrans.AccountId);
-                account.Amount += foundTrans.Amount;
+                var account = _context.UserMoneyAccounts
+                    .Include(x => x.Account)
+                    .ThenInclude(x => x.Currency)
+                    .First(x => x.Id == foundTrans.AccountId);
+
+                if (account.Account.Currency.ShortName != "UAH")
+                {
+                    account.Amount += await GetExchange("UAH", account.Account.Currency.ShortName, foundTrans.Amount);
+                }
+                else
+                {
+                    account.Amount += foundTrans.Amount;
+                }
             }
             else if(foundTrans.TypeNavigation.InternalEnumValue == (int)TransactionTypes.Add)
             {
-                var account = _context.UserMoneyAccounts.First(x => x.Id != foundTrans.AccountId);
+                var account = _context.UserMoneyAccounts.First(x => x.Id == foundTrans.AccountId);
                 account.Amount -= foundTrans.Amount;
             }
-            else if(foundTrans.TypeNavigation.InternalEnumValue == (int)TransactionTypes.Transfer)
+            else if(foundTrans.TypeNavigation.InternalEnumValue == (int)TransactionTypes.Transfer && foundTrans.TransferAccountId != null)
             {
-                var account = _context.UserMoneyAccounts.First(x => x.Id != foundTrans.AccountId);
-                account.Amount += foundTrans.Amount;
+                var account = _context.UserMoneyAccounts
+                    .Include(x => x.Account)
+                    .ThenInclude(x => x.Currency)
+                    .First(x => x.Id == foundTrans.AccountId);
+                
 
-                var account2 = _context.UserMoneyAccounts.First(x => x.Id != foundTrans.AccountId);
-                account2.Amount -= foundTrans.Amount;
+                var account2 = _context.UserMoneyAccounts
+                    .Include(x => x.Account)
+                    .ThenInclude(x => x.Currency)
+                    .First(x => x.Id == foundTrans.TransferAccountId);
+                
+
+                if (account.Account.Currency.ShortName != "UAH")
+                {
+                    account.Amount += await GetExchange("UAH", account.Account.Currency.ShortName, foundTrans.Amount);
+                }
+                else
+                {
+                    account.Amount += foundTrans.Amount;
+                }
+
+                if (account2.Account.Currency.ShortName != "UAH")
+                {
+                    account2.Amount += await GetExchange("UAH", account2.Account.Currency.ShortName, foundTrans.Amount);
+                }
+                else
+                {
+                    account2.Amount -= foundTrans.Amount;
+                }
+            }
+            else if(foundTrans.TypeNavigation.InternalEnumValue == (int)TransactionTypes.Transfer && foundTrans.UserDreamId != null)
+            {
+                var account = _context.UserMoneyAccounts
+                    .Include(x => x.Account)
+                    .ThenInclude(x => x.Currency)
+                    .First(x => x.Id == foundTrans.AccountId);
+
+                if (account.Account.Currency.ShortName != "UAH")
+                {
+                    account.Amount += await GetExchange("UAH", account.Account.Currency.ShortName, foundTrans.Amount);
+                }
+                else
+                {
+                    account.Amount += foundTrans.Amount;
+                }
+                
+
+                var dream = _context.UserDreams.FirstOrDefault(x => x.Id == foundTrans.UserDreamId);
+                dream.CurrentAmount -= foundTrans.Amount;
             }
 
             _context.Transactions.Remove(foundTrans);
@@ -164,6 +252,17 @@ namespace SpendMoney.Core.Services
             await _context.SaveChangesAsync();
 
             return id;
+        }
+
+        private async Task<decimal> GetExchange(string from, string to, decimal amount)
+        {
+            var exchangeRate = await _context.CurrencyExchanges
+                            .Include(x => x.FromNavigation)
+                            .Include(x => x.ToNavigation)
+                            .FirstAsync(x => x.FromNavigation.ShortName == from
+                                && x.ToNavigation.ShortName == to);
+
+            return Math.Round(amount * exchangeRate.Rate, 2);
         }
 
         public async Task<TransactionDto> UpdateTransaction(TransactionDto updatedTransaction)

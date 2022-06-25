@@ -11,6 +11,12 @@ namespace SpendMoney.Mapping
     {
         public AutoMapping()
         {
+            CreateMap<UserDreamDto, UserDreamViewModel>();
+            CreateMap<UserDream, UserDreamDto>()
+               .ForMember(dest => dest.Percentage, src => src.MapFrom(x => Math.Round((x.CurrentAmount / x.TargetAmount) * 100, 2)));
+            CreateMap<CreateDreamRQ, UserDream>()
+                .ForMember(dest => dest.StartDate, src => src.MapFrom(x => DateTime.Now.Date));
+            CreateMap<CreateDreamViewModel, CreateDreamRQ>();
             CreateMap<ChangeCategoryViewModel, UpdateCategoryRQ>();
             CreateMap<CategoryDto, ChangeCategoryViewModel>();
             CreateMap<ChangeUserAccountViewModel, UpdateUserAccountRQ>();

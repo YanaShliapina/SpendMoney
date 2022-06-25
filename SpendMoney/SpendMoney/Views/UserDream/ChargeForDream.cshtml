@@ -1,0 +1,45 @@
+﻿@model ChargeForDreamViewModel
+
+<div class="container" style="width: 50%">
+    <div class="text-center">
+        <h4>Поповнення мрії</h4>
+    </div>
+
+     <form class="mx-1 mx-md-4" asp-controller="UserDream" asp-action="ChargeForDream" method="post">
+        <div class="mb-3">
+            <label class="form-label" asp-for="SelectedAccountId">Аккаунт для переводу</label>
+            <select asp-for="SelectedAccountId" class="form-control" style="">
+                @{
+                    var first = true;
+
+                    foreach(var acc in Model.UserAccounts)
+                    {
+                        if (first)
+                        {
+                            <option selected value="@acc.AccountId">@acc.Name (@acc.Amount @acc.CurrencyShortName)</option>
+                            first = false;
+                        }
+                        else
+                        {
+                            <option value="@acc.AccountId">@acc.Name (@acc.Amount @acc.CurrencyShortName)</option>
+                        }
+                    }
+                }
+            </select>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.SelectedAccountId)</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Amount">Сума накопичення</label>
+            <input type="number" asp-for="Amount" step="0.01" class="form-control"/>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.Amount)</p>
+        </div>
+
+        <input type="hidden" asp-for="DreamId" />
+        <input type="hidden" asp-for="DreamName" />
+
+        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+            <button type="submit" class="btn btn-primary btn-lg">Перерахувати</button>
+        </div>
+    </form>
+</div>

@@ -87,27 +87,30 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex flex-column">
-                        <div class="col mb-2">
-                            <div class="row">
-                                <div class="col">
-                                    <span>Автомобіль</span>
-                                </div>
-                                <div class="col d-flex justify-content-end">
-                                    <a class="btn btn-outline-success">
-                                        <span class="bi bi-plus"></span>    
-                                    </a>
+                    @foreach(var dream in Model.UserDreams)
+                    {
+                        <div class="d-flex flex-column mb-3">
+                            <div class="col mb-2">
+                                <div class="row">
+                                    <div class="col">
+                                        <span>@dream.Name</span>
+                                    </div>
+                                    <div class="col d-flex justify-content-end">
+                                        <a asp-action="ChargeForDream" asp-controller="UserDream" asp-route-dreamId="@dream.Id" class="btn btn-outline-success">
+                                            <span class="bi bi-plus"></span>    
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="col">
-                            <div id="progress">
-                                <span id="percent">300 ₴/1000 ₴</span>
-                                <div id="bar"></div>
+                            <div class="col">
+                                <div id="progress">
+                                    <span id="percent">@Math.Round(dream.CurrentAmount, 2) ₴/@Math.Round(dream.TargetAmount, 2) ₴</span>
+                                    <div id="bar" style="width: @string.Concat(dream.Percentage, "%");"></div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </div>   
+                    }
                 </div>
             </div>
         </div>
@@ -266,7 +269,6 @@
 #bar {
  height: 20px;
  background-color: green;
- width: 30%;
 }
 
 
@@ -296,6 +298,7 @@
 
 <script>
     $(document).ready( function() {
+
         $('.user-account').on('click', function(e) { 
             $('#popup').offset({ top: e.pageY, left:  e.pageX}).fadeIn(); 
 

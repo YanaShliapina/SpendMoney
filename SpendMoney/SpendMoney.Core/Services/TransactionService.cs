@@ -282,5 +282,10 @@ namespace SpendMoney.Core.Services
 
             return _mapper.Map<TransactionDto>(initialTran);
         }
+
+        public async Task<List<TransactionDto>> GetTransactionsByType(TransactionTypes transactionType)
+        {
+            return _mapper.Map<List<TransactionDto>>(_context.Transactions.Include(x => x.TypeNavigation).Where(x => x.TypeNavigation.InternalEnumValue == (int)transactionType).ToList());
+        }
     }
 }

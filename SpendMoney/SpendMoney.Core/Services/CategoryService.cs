@@ -86,4 +86,13 @@ public class CategoryService : ICategoryService
 
         return _mapper.Map<CategoryDto>(foundCat);
     }
+
+    public async Task<List<CategoryDto>> GetAllCategoryList()
+    {
+        var foundCats = await _context.Categories
+            .Include(x => x.Image)
+            .Include(x => x.Transactions)
+            .ToListAsync();
+        return _mapper.Map<List<CategoryDto>>(foundCats);
+    }
 }

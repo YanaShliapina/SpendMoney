@@ -11,4 +11,5 @@ public interface ICategoryService
     Task<CategoryDto> GetCategoryById(int categoryId, string userId = "");
     Task<CategoryDto> UpdateCategory(UpdateCategoryRQ request);
     Task<Category> GetCategoryEntityById(int categoryId, string userId = "");
+    Task<List<CategoryDto>> GetAllCategoryList();
 }

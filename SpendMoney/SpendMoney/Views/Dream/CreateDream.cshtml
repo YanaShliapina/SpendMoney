@@ -1,0 +1,48 @@
+﻿@model CreateDreamViewModel
+
+<div class="container h-100">
+    <div class="text-center mb-3" style="width: 100%">
+        <h4>Створення нової мрії</h4>    
+    </div>
+
+    <form class="mx-1 mx-md-4" asp-controller="Category" asp-action="CreateCategory" method="post">
+        <div class="mb-3">
+            <label class="form-label" asp-for="Name">Назва мрії</label>
+            <input type="text" asp-for="Name" class="form-control"/>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.Name)</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="SaveType">Тип внеску</label>
+            <select asp-for="SaveType" class="form-control" style="">
+                <option selected value="1">Щотижневий</option>
+                <option value="2">Щомісячний</option>
+                <option value="3">Щоденний</option>
+            </select>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.SaveType)</p>
+        </div>
+
+        <div class="mb-3">
+            <div class="form-group">
+                <label for="inputDate">Дата закінчення накопичення</label>
+                <input id="start-date-input" type="date" class="form-control">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="TargetAmount">Сума накопичення</label>
+            <input type="number" asp-for="TargetAmount" step="0.01" class="form-control"/>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.TargetAmount)</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="CurrentAmount">Поточна сума</label>
+            <input type="number" asp-for="CurrentAmount" step="0.01" class="form-control"/>
+            <p class="text-danger">@Html.ValidationMessageFor(m => m.CurrentAmount)</p>
+        </div>
+
+        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+            <button type="submit" class="btn btn-primary btn-lg">Створити</button>
+        </div>
+    </form>
+</div>
